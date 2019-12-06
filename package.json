@@ -1,0 +1,23 @@
+{
+  "name": "website-reflect-server",
+  "version": "0.0.1",
+  "description": "website reflect server-side in nodejs, using projectData",
+  "main": "./main.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --experimental-modules --es-module-specifier-resolution=node ./main.js"
+  },
+  "dependencies": {
+    "bcrypt": "^3.0.7",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-jwt": "^5.3.1",
+    "fs": "0.0.1-security",
+    "jsonwebtoken": "^8.5.1",
+    "projectData": "git+https://git.lsys.ac/luca/projectData.git"
+  },
+  "devDependencies": {}
+}
