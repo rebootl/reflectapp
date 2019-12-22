@@ -69,16 +69,22 @@ const writeData = () => {
 new Endpoint(app.route('/entries'), {
   query: new CustomQuery({ update: ()=>data }),
   filter: (e, req) => {
-    console.log(req.user);
+    //console.log(req.user);
+    //console.log(e);
     if (e.private) {
       if (req.user) return e;
       else return;
     }
     return e;
   },
-  add: async (obj, _user) => {
-    data.push(obj);
-    writeData();
+  add: async (obj, req) => {
+    console.log(req.user);
+    if (req.user) {
+      data.push(obj);
+      writeData();
+    } else {
+      return;
+    }
   },
   delete: async (obj, _user) => {
   },
