@@ -59,12 +59,13 @@ app.post('/login', (req, res) => {
 // db / projectData endpoint
 
 const dataFile = 'db.json'
-const data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
+let data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
 
 const writeData = () => {
   const str = JSON.stringify(data);
   fs.writeFileSync(dataFile, str);
 };
+console.log(data)
 
 new Endpoint(app.route('/entries'), {
   query: new CustomQuery({ update: ()=>data }),
@@ -79,17 +80,17 @@ new Endpoint(app.route('/entries'), {
   },
   add: async (obj, req) => {
     console.log(req.user);
-    if (req.user) {
-      data.push(obj);
-      writeData();
-    } else {
-      return;
-    }
+    if (!req.user) return;
+    data.push(obj);
+    writeData();
   },
-  delete: async (obj, _user) => {
+  delete: async (obj, req) => {
+    if (!req.user) return;
+    data = data.filter((v) => v.id !== obj.id);
+    writeData();
   },
-  update: async (newObj, oldObj, _user) => {
-  }
+  //update: async (newObj, oldObj, _user) => {
+  //}
 });
 
 app.listen(4040);
