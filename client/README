@@ -1,0 +1,22 @@
+# reflect
+
+"manage notes, links, images aso. w/ a modern looking webapplication"
+
+## Client
+
+JavaScript Single Page App for the reflect app.
+
+## Tasks / Issues
+
+See notes.md.
+
+## Setup
+
+- deployment?
+
+Development:
+
+using rollup:
+
+* https://rollupjs.org/guide/en
+* https://github.com/rollup/rollup-starter-app

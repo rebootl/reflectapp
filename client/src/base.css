@@ -1,0 +1,9 @@
+html {
+  /* fonts etc... */
+  font-family: Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}

@@ -23,7 +23,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.use('/', express.static('static'));
+app.use('/', express.static('client/dist'));
 
 // login / jwt stuff
 
