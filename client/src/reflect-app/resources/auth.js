@@ -1,6 +1,5 @@
-import { login_url } from './urls.js';
 import { api_req_post } from './api_request_helpers.js'
-import { api } from './api-service.js';
+import { api, login_url } from './api-service.js';
 
 export function loggedIn() {
   if (localStorage.getItem('access_token')) {
@@ -29,13 +28,11 @@ export async function login(username, pw) {
     password: pw
   });
   // check login login_resp
-  console.log(login_resp);
   if (!login_resp) {
     console.log("Login unsuccessful :(");
     return false;
   } else {
     console.log("Login successful!");
-    //console.log(login_resp);
     // store JWT
     localStorage.setItem('access_token', login_resp.token);
     localStorage.setItem('username', username);
@@ -51,18 +48,6 @@ export async function logout() {
   await api.setParams({});
   await api.reset();
 }
-
-/*
-export function update_login_status() {
-  var username = localStorage.getItem('username');
-  if (username) {
-    global_state.user.name = username;
-    global_state.user.logged_in = true;
-  }
-  else {
-    global_state.user.logged_in = false;
-  }
-}*/
 
 export function get_auth_header() {
   if (loggedIn()) {

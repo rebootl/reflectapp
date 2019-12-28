@@ -3,9 +3,14 @@ import { setApi } from 'projectData-client/dist/Inspector.js';
 import faker from 'faker';
 import { getAuthHeader, loggedIn } from './auth.js';
 
-export const api = new API('http://localhost:4040/', getAuthHeader());
+// api
+export const api = new API(window.location.origin.toString() + '/', getAuthHeader());
 // set api for inspector
 setApi(api);
+
+// request urls
+export const login_url = '/login';
+export const url_info_url = '/url_info';
 
 export const create_example_data = async function() {
   // api.setparams...

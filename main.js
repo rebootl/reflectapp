@@ -44,6 +44,7 @@ app.post('/login', (req, res) => {
       console.log("login ok");
       res.send({ token: createToken() });
     } else {
+      console.log("login failed");
       res.sendStatus(401);
     }
   });

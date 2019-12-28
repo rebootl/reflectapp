@@ -1,14 +1,17 @@
 ## ToDo
 
-* add edit-view
-* create-entry comp.
-  - reset selection if input empty (needs fixing in the reset functions
-    to prevent too much recursion)
+* storing entry when unchanged results in empty text
+* add edit-view => DONE
+  - redirect after save
+  - use checkbox for private/public
+* create-entry component: reset selection if input empty
+  (needs fixing in the reset functions to prevent too much recursion)
 * fix link detection
+* cleanup function naming (camelCase)
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router
-* integrate project-Data => WIP
+* integrate project-Data => DONE
 * rework style LUL
 * accessibility: topics-list not using keyboard tabs
 * check script/view for duplicate id's, broken links
