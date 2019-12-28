@@ -8,8 +8,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import Endpoint from 'projectData/dist/Endpoint';
 import { CustomQuery } from 'projectData/dist/Misc/Custom';
-
-const secret = 'abcdefgh';
+import { port, secret, user } from './config.js';
 
 const app = express();
 app.use(bodyParser.json());
@@ -23,16 +22,10 @@ app.use(cors({
   credentials: true
 }));
 
+// serve the client static
 app.use('/', express.static('client/dist'));
 
 // login / jwt stuff
-
-const user = {
-  name: 'rebootl',
-  pwhash: '$2b$10$wbm.5m27QVoQKvVh1Lar4uabKplVvoZFGjKuKYFCQfqilkZ5ij9oi'
-};
-// const bcrypt = require('bcrypt');
-// bcrypt.hashSync('beboop', 10);
 
 function createToken() {
   // sign with default (HMAC SHA256)
@@ -65,13 +58,10 @@ const writeData = () => {
   const str = JSON.stringify(data);
   fs.writeFileSync(dataFile, str);
 };
-console.log(data)
 
 new Endpoint(app.route('/entries'), {
   query: new CustomQuery({ update: ()=>data }),
   filter: (e, req) => {
-    //console.log(req.user);
-    //console.log(e);
     if (e.private) {
       if (req.user) return e;
       else return;
@@ -93,5 +83,5 @@ new Endpoint(app.route('/entries'), {
   //}
 });
 
-app.listen(4040);
-console.log('listening on 4040');
+app.listen(port);
+console.log('listening on ' + port);
