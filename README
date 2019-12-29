@@ -12,7 +12,7 @@
 
 ### create
 
-  $ docker run docker run -p 4040:4040 \
+  $ docker run -p 4040:4040 \
     --mount type=bind,source="$(pwd)"/db,target=/usr/src/app/db \
     --restart always \
     --name reflect \
