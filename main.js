@@ -10,7 +10,16 @@ import Endpoint from 'projectData/dist/Endpoint';
 import { CustomQuery } from 'projectData/dist/Misc/Custom';
 import { port, secret, user } from './config.js';
 
+// data file
+const dataFile = 'db/db.json'
+
+// routes
+const login = '/api/login';
+const entries = '/api/entries';
+
+// app
 const app = express();
+
 app.use(bodyParser.json());
 app.use(compression());
 app.use(expressJwt({
@@ -34,7 +43,7 @@ function createToken() {
   return token;
 }
 
-app.post('/login', (req, res) => {
+app.post(login, (req, res) => {
   if (req.body.username !== user.name) {
     res.sendStatus(401);
     return;
@@ -50,9 +59,7 @@ app.post('/login', (req, res) => {
   });
 });
 
-// db / projectData endpoint
-
-const dataFile = 'db.json'
+// load data
 let data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
 
 const writeData = () => {
@@ -60,7 +67,7 @@ const writeData = () => {
   fs.writeFileSync(dataFile, str);
 };
 
-new Endpoint(app.route('/entries'), {
+new Endpoint(app.route(entries), {
   query: new CustomQuery({ update: ()=>data }),
   filter: (e, req) => {
     if (e.private) {

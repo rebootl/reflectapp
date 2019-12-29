@@ -1,0 +1,19 @@
+
+
+## deployment
+
+### build
+
+  $ docker build -t reflect .
+
+### setup data file
+
+  $ cp db/db.json_emty db/db.json
+
+### create
+
+  $ docker run docker run -p 4040:4040 \
+    --mount type=bind,source="$(pwd)"/db,target=/usr/src/app/db \
+    --restart always \
+    --name reflect \
+    reflect
