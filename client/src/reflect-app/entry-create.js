@@ -121,19 +121,17 @@ class EntryCreate extends HTMLElement {
     // create id/ref
     const digest = await digestMessage(JSON.stringify(entry));
     let prefix = "";
-    console.log(entry.type);
     if (entry.type === 'note') {
       prefix = await getPrefix(entry.text);
     } else if (entry.type === 'link') {
       prefix = "link";
     }
     const id = prefix + "-" + digest.slice(0, 10);
-    console.log(id);
     entry = { ...entry, id };
     await db.add(entry);
     console.log("created entry!!");
     console.log("id: " + id);
-    // -> return id ?
+    console.log("type: " + entry.type);
     this.reset();
   }
   reset() {

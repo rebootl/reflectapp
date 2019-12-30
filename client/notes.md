@@ -1,5 +1,9 @@
 ## ToDo
 
+* fix the flickering during link input
+* link creation broken => FIXED
+* url detection broken, "todo:" is a url... => FIXED
+* remove dashed border css, cleanup console logs, more cleanups?
 * storing entry when unchanged results in empty text
 * add edit-view => DONE
   - redirect after save
@@ -11,9 +15,10 @@
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router
-* integrate project-Data => DONE
+* integrate project-Data => DONE, kinda?
 * rework style LUL
 * accessibility: topics-list not using keyboard tabs
+* use service worker for offline capability
 * check script/view for duplicate id's, broken links
 * encrypt private entries (probably Server side)
 

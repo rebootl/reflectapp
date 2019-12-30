@@ -120,39 +120,33 @@ class EntryInput extends HTMLElement {
       })
       .catch((e)=>{
         if (e.code === 'ERESPONSE') {
-          this.result = {...this.result, type: 'brokenlink', info: "broken link :(", title: e.message};
+          this.result = { ...this.result, type: 'brokenlink',
+            info: "broken link :(", title: e.message};
           this.status = 'complete';
         } else {
-          this.result = {...this.result, info: "url info request failed...", title: e};
+          this.result = {...this.result, info: "url info request failed...",
+            title: e.message};
           this.status = 'complete';
         }
       });
   }
   async detect(text) {
-    //const text = this.shadowRoot.querySelector('#entry-input').value;
-    //console.log("triggered detect");
-    /*const url = (()=>{try {return new URL(...);} catch (e) {}})();
-    if (url) {
-    } else {
-    }*/
-    let url;
-    try {
-      url = new URL(text); // this should throw if not a url
-    } catch(e) {
-      //console.log(e);
-      if (text === "") {
-        this.result = {};
-        this.status = 'initial';
-      } else {
-        this.result = {text: text, type: 'note'};
-        this.status = 'complete';
-      }
+    // using the URL constructor for detection leads to wrong results
+    // e.g. "todos:" is detected as a url...
+    if (text.startsWith("http://") || text.startsWith("https://")) {
+      this.status = 'pending';
+      this.result = {url: text, type: 'link'};
+      await this.setUrlInfo(text);
       return;
     }
-    this.status = 'pending';
-    this.result = {url: text, type: 'link'};
-    await this.setUrlInfo(url);
-    //console.log(this.result);
+    if (text === "") {
+      this.result = {};
+      this.status = 'initial';
+    } else {
+      this.result = {text: text, type: 'note'};
+      this.status = 'complete';
+    }
+    return;
   }
   triggerDetect(text) {
     // (by Luca)
