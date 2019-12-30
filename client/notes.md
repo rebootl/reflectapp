@@ -1,9 +1,8 @@
 ## ToDo
 
+* remove dashed border css => DONE
+* cleanup console logs, more cleanups?
 * fix the flickering during link input
-* link creation broken => FIXED
-* url detection broken, "todo:" is a url... => FIXED
-* remove dashed border css, cleanup console logs, more cleanups?
 * storing entry when unchanged results in empty text
 * add edit-view => DONE
   - redirect after save
@@ -24,6 +23,8 @@
 
 ### Done
 
+* link creation broken => FIXED
+* url detection broken, "todo:" is a url... => FIXED
 * click logo to "home" view => DONE
 * add page not found output if entry id not found => DONE
 * fix create buttons => DONE

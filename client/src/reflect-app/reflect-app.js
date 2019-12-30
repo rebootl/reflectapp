@@ -89,7 +89,7 @@ const style = html`
     #add-box {
       grid-area: add-box;
       height: 50px;
-      border: 1px dashed #333;
+      /*border: 1px dashed #333;*/
     }
     main-content {
       grid-area: main-content;
