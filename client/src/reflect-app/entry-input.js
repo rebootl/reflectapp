@@ -58,7 +58,7 @@ class EntryInput extends HTMLElement {
   }
   set ready(v) {
     this._ready = v;
-    this.dispatchEvent(new CustomEvent('ready', {detail: this._ready}));
+    this.dispatchEvent(new CustomEvent('ready', {detail: v}));
   }
   get status() {
     return this._status || 'initial';
@@ -133,30 +133,30 @@ class EntryInput extends HTMLElement {
   async detect(text) {
     // using the URL constructor for detection leads to wrong results
     // e.g. "todos:" is detected as a url...
+    if (typeof(text) === 'undefined' || text === "") {
+      this.result = {};
+      this.status = 'initial';
+      return;
+    }
     if (text.startsWith("http://") || text.startsWith("https://")) {
       this.status = 'pending';
       this.result = {url: text, type: 'link'};
       await this.setUrlInfo(text);
       return;
     }
-    if (text === "") {
-      this.result = {};
-      this.status = 'initial';
-    } else {
-      this.result = {text: text, type: 'note'};
-      this.status = 'complete';
-    }
+    this.result = {text: text, type: 'note'};
+    this.status = 'complete';
     return;
   }
   triggerDetect(text) {
     // (by Luca)
     //console.log("triggered");
-    this.text = text;
+    //this.text = text;
     if (this.detectPending) return;
     this.detectQueue = (async ()=>{
       await this.detectQueue;
       this.detectPending = false;
-      await this.detect(this.text);
+      await this.detect(text);
     })();
     this.detectPending = true;
   }
@@ -167,6 +167,7 @@ class EntryInput extends HTMLElement {
     this.result = {};
   }
   getTypeDetect() {
+    console.log(this.status);
     if (this.status.detection === 'typing')
       return html`<small>typing...</small>`;
     if (this.result.type === 'link' && this.status === 'pending') {

@@ -1,16 +1,15 @@
 ## ToDo
 
-* remove dashed border css => DONE
 * cleanup console logs, more cleanups?
-* fix the flickering during link input
 * storing entry when unchanged results in empty text
-* add edit-view => DONE
-  - redirect after save
-  - use checkbox for private/public
+* fix link detection (server side)
+* redirect after saving edit
+* use checkbox for private/public on edit view
+* fix the flickering during link input
 * create-entry component: reset selection if input empty
   (needs fixing in the reset functions to prevent too much recursion)
-* fix link detection
 * cleanup function naming (camelCase)
+* use connectedCallback for all elements
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router
@@ -19,10 +18,12 @@
 * accessibility: topics-list not using keyboard tabs
 * use service worker for offline capability
 * check script/view for duplicate id's, broken links
-* encrypt private entries (probably Server side)
+* encrypt private entries
 
 ### Done
 
+* add edit-view => DONE
+* remove dashed border css => DONE
 * link creation broken => FIXED
 * url detection broken, "todo:" is a url... => FIXED
 * click logo to "home" view => DONE

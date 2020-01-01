@@ -34,14 +34,13 @@ class TextareaInput extends HTMLElement {
     this.dispatchEvent(new CustomEvent('input'));
   }
   get rows() {
-    //if (!this.hasAttribute('rows')) return 1;
-    //else return this.getAttribute('rows');
     return this.getAttribute('rows') || 1;
   }
   get cols() {
-    //if (!this.hasAttribute('cols')) return 30;
-    //else return this.getAttribute('cols');
     return this.getAttribute('cols') || 30;
+  }
+  get placeholder() {
+    return this.getAttribute('placeholder') || "...";
   }
   get loadtext() {
     return this.getAttribute('loadtext') || "";
@@ -52,8 +51,8 @@ class TextareaInput extends HTMLElement {
   }
   connectedCallback() {
     this.update();
-    if (this.hasAttribute('height'))
-    this.shadowRoot.querySelector('textarea').style.height = this.getAttribute('height');
+    if (this.loadtext !== "")
+      this.dispatchEvent(new CustomEvent('loadtext-loaded'));
   }
   reset() {
     this.shadowRoot.querySelector('textarea').value = "";
@@ -63,7 +62,7 @@ class TextareaInput extends HTMLElement {
         ${style}
         <textarea rows=${this.rows} cols=${this.cols}
           @input=${(e)=>this.value=e.target.value}
-          placeholder=${this.getAttribute('placeholder')}>${this.loadtext}</textarea>`
+          placeholder=${this.placeholder}>${this.loadtext}</textarea>`
       , this.shadowRoot);
   }
 }
