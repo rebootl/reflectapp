@@ -1,7 +1,6 @@
 import { html, render } from 'lit-html';
 import { api } from './resources/api-service.js';
 import './entry-header.js';
-import './entry-edit.js';
 import './entry-item.js';
 import './gen-elements/labelled-checkbox.js';
 
