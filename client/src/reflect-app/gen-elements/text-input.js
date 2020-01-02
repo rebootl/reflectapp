@@ -36,6 +36,9 @@ class TextInput extends HTMLElement {
     if (!this.getAttribute('size')) return 10;
     else return this.getAttribute('size');
   }
+  get loadtext() {
+    return this.getAttribute('loadtext') || "";
+  }
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
@@ -51,7 +54,8 @@ class TextInput extends HTMLElement {
       ${style}
       <input type="text" size=${this.size}
         @input=${(e)=>this.value=e.target.value}
-        placeholder="${this.getAttribute('placeholder')}">`
+        placeholder=${this.getAttribute('placeholder')}
+        value=${this.loadtext}>`
       , this.shadowRoot);
   }
 }

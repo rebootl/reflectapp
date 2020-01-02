@@ -1,7 +1,8 @@
 ## ToDo
 
-* cleanup console logs, more cleanups?
 * storing entry when unchanged results in empty text
+* make "input-overlay" it's own component
+* cleanup console logs, more cleanups?
 * fix link detection (server side)
 * redirect after saving edit
 * use checkbox for private/public on edit view

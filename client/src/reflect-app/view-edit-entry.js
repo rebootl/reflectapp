@@ -1,10 +1,9 @@
 import { html, render } from 'lit-html';
 import { api } from './resources/api-service.js';
-import { digestMessage, getPrefix } from './resources/helpers.js';
-import './entry-item.js';
 import './entry-header.js';
-import './entry-input.js';
-//import './gen-elements/textarea-input.js';
+import './entry-edit.js';
+import './entry-item.js';
+import './gen-elements/labelled-checkbox.js';
 
 const style = html`
   <style>
@@ -14,10 +13,18 @@ const style = html`
     }
     entry-input {
       margin-top: 20px;
-      /*margin-bottom: 20px;*/
+      margin-bottom: 10px;
+    }
+    #typeinfo {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--light-text-low-emph);
     }
     pre {
-      color: var(--light-text-med-emph)
+      color: var(--light-text-med-emph);
+    }
+    labelled-checkbox {
+      margin-left: 20px;
     }
     #input-overlay {
       background-color: var(--surface);
@@ -58,16 +65,8 @@ class ViewEditEntry extends HTMLElement {
     this._newTags = v;
     this.update();
   }
-  get inputReady() {
-    return this._inputReady || false;
-  }
-  set inputReady(v) {
-    this._inputReady = v;
-    this.update();
-  }
   get valid() {
-    if ((this.activeTopics.length < 1 && this.newTopics.length < 1) ||
-      !this.inputReady)
+    if (this.activeTopics.length < 1 && this.newTopics.length < 1)
       return false;
     return true;
   }
@@ -93,50 +92,63 @@ class ViewEditEntry extends HTMLElement {
     console.log(entryId);
     const db = await api.getSource('entries');
     const [ entry ] = await db.query({ id: entryId });
-    this.entry = entry;
-    this.originalEntry = entry;
-    this.activeTopics = entry.topics;
-    this.activeTags = entry.tags;
+    this.oldEntry = entry;
+    if (entry) {
+      this.activeTopics = entry.topics;
+      this.activeTags = entry.tags;
+    }
     this.update();
-    this.shadowRoot.querySelector('entry-input').detect();
   }
-  async saveEntry(_private) {
+  async saveEntry(close) {
     const db = await api.getSource('entries');
-    const date = this.originalEntry.date;
     const mdate = new Date();
-    let entry = {
-      ...this.entry,
-      id: this.originalEntry.id,
-      date: date,
+    const _private = this.shadowRoot.querySelector('#privateCheckbox').value;
+    // there are problems when relying on the "updated" this.entry alone
+    // e.g. changing the text and then afterwards changing the topics
+    // results in the oldEntry text to be set in this.entry and stored,
+    // but on-screen is the changed text
+    // therefor querying the result here
+    const result = this.shadowRoot.querySelector('entry-input').result;
+    //console.log("result: ", result);
+    this.activeTopics = [ ...this.activeTopics, ...this.newTopics ];
+    this.activeTags = [ ...this.activeTags, ...this.newTags ];
+    const entry = {
+      ...result,
+      id: this.oldEntry.id,
+      date: this.oldEntry.date,
       mdate: mdate,
-      topics: [ ...this.activeTopics, ...this.newTopics ],
-      tags: [ ...this.activeTags, ...this.newTags ],
+      topics: this.activeTopics,
+      tags: this.activeTags,
       private: _private,
     };
-    await db.update({ id: this.originalEntry.id }, entry);
-    //const res = await db.query({ id: this.originalEntry.id });
-    //console.log(res);
+    //console.log("entry: ", entry);
+    await db.update({ id: this.oldEntry.id }, entry);
     console.log("updated entry!!");
     console.log("id: " + entry.id);
+    if (close) window.location.hash = "#entries";
+    // reset stuff
+    this.shadowRoot.querySelector('#add-topics').reset();
+    this.shadowRoot.querySelector('#add-tags').reset();
   }
   update() {
-    //console.log(this.entry);
     render(html`${style}
-      ${ this.entry ?
+      ${ this.oldEntry ?
         html`
-          <entry-header .entry=${this.originalEntry} noedit></entry-header>
-          <entry-input rows=8 cols=35
-            @ready=${(e)=>{this.inputReady = e.detail}}
+          <entry-header .entry=${this.oldEntry} noedit></entry-header>
+          <entry-input .oldEntry=${this.oldEntry}
+            @loaded=${(e)=>this.entry=e.detail}
             @inputchange=${(e)=>{this.entry = e.detail}}
-            placeholder="..."
-            loadtext=${this.entry.text}></entry-input>
+            cols="45" rows=${this.oldEntry.type === 'note' ? 10 : 1}
+            ></entry-input>
           <div id="buttonsBox">
-            <labelled-button class="inline" ?disabledstyle=${!this.valid}
-                             @click=${()=>this.saveEntry(false)} label="Save"></labelled-button>
-            <labelled-button class="inline" ?disabledstyle=${!this.valid}
-                             @click=${()=>this.saveEntry(true)} label="Save as Private"></labelled-button>
+            <labelled-button class="inline" ?disabled=${!this.valid}
+              @click=${()=>this.saveEntry()} label="Save"
+              ></labelled-button>
+            <labelled-button class="inline" ?disabled=${!this.valid}
+              @click=${()=>this.saveEntry(true)} label="Save and Close"
+              ></labelled-button>
+            <labelled-checkbox id="privateCheckbox" ?checked=${this.oldEntry.private}>Private</labelled-checkbox>
           </div>
-          <!--<entry-item .entry=${this.entry}></entry-item>-->
           <pre>[preview todo]</pre>
           <div id="input-overlay">
             <add-items id="add-topics" label="New Topic..."

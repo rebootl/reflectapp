@@ -53,38 +53,42 @@ function throttle(func, delay=1000) {
 }
 
 class EntryInput extends HTMLElement {
-  get ready() {
-    return this._ready || false;
+  set oldEntry(v) {
+    this._oldEntry = v;
+    this.dispatchEvent(new CustomEvent('loaded', {detail: v}));
+  }
+  get oldEntry() {
+    return this._oldEntry || {};
   }
   set ready(v) {
     this._ready = v;
     this.dispatchEvent(new CustomEvent('ready', {detail: v}));
   }
-  get status() {
-    return this._status || 'initial';
+  get ready() {
+    return this._ready || false;
   }
   set status(v) {
     this._status = v;
     this.ready = this._status === 'complete' ? true : false;
     this.update();
   }
-  get result() {
-    return this._result || {};
+  get status() {
+    return this._status || 'initial';
   }
   set result(v) {
     this._result = v;
-    this.dispatchEvent(new CustomEvent('inputchange', {detail: this.result}));
+    this.dispatchEvent(new CustomEvent('inputchange', {detail: v}));
     this.update();
   }
-  get comment() {
-    return this._comment || "";
+  get result() {
+    return this._result || this.oldEntry;
   }
   set comment(v) {
     this._comment = v;
     this.result = {...this.result, comment: v};
   }
-  get loadtext() {
-    return this.getAttribute('loadtext') || "";
+  get comment() {
+    return this._comment || "";
   }
   get placeholder() {
     return this.getAttribute('placeholder') || "New Entry...";
@@ -167,7 +171,6 @@ class EntryInput extends HTMLElement {
     this.result = {};
   }
   getTypeDetect() {
-    console.log(this.status);
     if (this.status.detection === 'typing')
       return html`<small>typing...</small>`;
     if (this.result.type === 'link' && this.status === 'pending') {
@@ -190,17 +193,25 @@ class EntryInput extends HTMLElement {
   }
   update() {
     const commentClasses = { active: this.result.type === 'link' };
+    let loadtext = "";
+    let loadcomment = "";
+    if (this.oldEntry.type === 'note') loadtext = this.oldEntry.text;
+    if (this.oldEntry.type === 'link' || this.oldEntry.type === 'brokenlink') {
+      loadtext = this.oldEntry.url;
+      loadcomment = this.oldEntry.comment;
+    }
     render(html`${style}
       <textarea-input id="entry-text" rows=${this.rows} cols=${this.cols}
                   @input=${(e)=>this.triggerDetect(e.target.value.trim())}
                   placeholder=${this.placeholder}
-                  loadtext=${this.loadtext}></textarea-input>
+                  loadtext=${loadtext}></textarea-input>
       <div id="typeDetectionBox">
         <small id="typeDetection">Type: </small>${this.getTypeDetect()}
       </div>
       <text-input id="comment" size="25" class=${classMap(commentClasses)}
                   @input=${(e)=>{this.comment = e.target.value.trim()}}
-                  placeholder="Add a comment..."></text-input>
+                  placeholder="Add a comment..."
+                  loadtext=${loadcomment}></text-input>
       `,
       this.shadowRoot);
   }
