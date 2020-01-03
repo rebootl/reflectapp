@@ -51,15 +51,14 @@ class EntryContent extends HTMLElement {
   }
   getContent() {
     if (this.entry.type === 'note') {
-      return html`<div class="le-body">${unsafeHTML(md.render(this.entry.text))}</div>`;
+      return html`${unsafeHTML(md.render(this.entry.text))}`;
     } else if (this.entry.type === 'link' || this.entry.type === 'brokenlink') {
-      return html`<div class="le-body">
-                    <p>${this.entry.title}</p>
-                    <a href=${this.entry.url}>${this.entry.url}</a><br />
-                    <small>${this.entry.info}</small>
-                    <div>${this.entry.comment !== "" ? this.entry.comment : html``}</div>
-                  </div>
-                 `;
+      return html`<p id="linktitle">${this.entry.title}</p>
+        <a href=${this.entry.url}>${this.entry.url}</a><br />
+        <small>${this.entry.info}</small>
+        ${ this.entry.comment !== "" ? html`<p id="linkcomment"
+          >Comment: ${this.entry.comment}</p>` : html`` }
+      `;
     }
   }
   update() {
