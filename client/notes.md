@@ -4,6 +4,7 @@
 * (re-)add pinned entries
 * pagination
 * maybe add direct toggle for private/pinning
+* maybe rework edit-input to "query" input instead
 * delete entries, inactivate maybe?
 * rework CSS
 * cleanups

@@ -105,6 +105,7 @@ class ViewEditEntry extends HTMLElement {
     // results in the oldEntry text to be set in this.entry and stored,
     // but on-screen is the changed text
     // therefor querying the result here
+    // alternative: set input via query
     const result = this.shadowRoot.querySelector('entry-input').result;
     //console.log("result: ", result);
     this.activeTopics = [ ...this.activeTopics, ...this.newTopics ];
