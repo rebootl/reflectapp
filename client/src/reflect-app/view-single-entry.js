@@ -38,14 +38,12 @@ class ViewSingleEntry extends HTMLElement {
   async updateQuery() {
     const params = this.urlStateObject.params;
     const entryId = params.id || [];
-    console.log(entryId);
     const db = await api.getSource('entries');
     const [ entry ] = await db.query({ id: entryId });
     this.entry = entry;
     this.update();
   }
   update() {
-    console.log(this.entry);
     render(html`${style}
       ${ this.entry ?
         html`<entry-item .entry=${this.entry}></entry-item>` :
