@@ -1,11 +1,8 @@
 ## ToDo
 
-* (re-)add pinned entries
-* console log link info request error, instead of using it in title => DONE
-* empty comment should be empty string => DONE
-* remove console log view-single-entry
-* fix link css margins => DONE
 * fix link detection (server side)
+* (re-)add pinned entries
+* maybe add direct toggle for private/pinning
 * delete entries, inactivate maybe?
 * rework CSS
 * cleanups
@@ -32,6 +29,10 @@
 
 ### Done
 
+* console log link info request error, instead of using it in title => DONE
+* empty comment should be empty string => DONE
+* remove console log view-single-entry => DONE
+* fix link css margins => DONE
 * edit-entry cancel button => DONE
 * use checkbox for private/public on edit view => DONE
 * redirect after saving edit => DONE, "Save and Close" button
