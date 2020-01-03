@@ -128,8 +128,9 @@ class EntryInput extends HTMLElement {
             info: "broken link :(", title: e.message};
           this.status = 'complete';
         } else {
-          this.result = {...this.result, info: "url info request failed...",
-            title: e.message};
+          console.log("url info request error: " + e.message);
+          this.result = {...this.result, info: "(url info request failed...)",
+            title: ""};
           this.status = 'complete';
         }
       });
@@ -144,7 +145,7 @@ class EntryInput extends HTMLElement {
     }
     if (text.startsWith("http://") || text.startsWith("https://")) {
       this.status = 'pending';
-      this.result = {url: text, type: 'link'};
+      this.result = {url: text, type: 'link', comment: this.comment};
       await this.setUrlInfo(text);
       return;
     }
