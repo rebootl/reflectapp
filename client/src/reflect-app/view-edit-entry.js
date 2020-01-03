@@ -14,10 +14,8 @@ const style = html`
       margin-top: 20px;
       margin-bottom: 10px;
     }
-    #typeinfo {
-      display: block;
-      margin-bottom: 10px;
-      color: var(--light-text-low-emph);
+    a {
+      color: var(--primary);
     }
     pre {
       color: var(--light-text-med-emph);
@@ -146,6 +144,7 @@ class ViewEditEntry extends HTMLElement {
             <labelled-button class="inline" ?disabled=${!this.valid}
               @click=${()=>this.saveEntry(true)} label="Save and Close"
               ></labelled-button>
+            <a href="/#entries">Cancel</a>
             <labelled-checkbox id="privateCheckbox" ?checked=${this.oldEntry.private}>Private</labelled-checkbox>
           </div>
           <pre>[preview todo]</pre>
