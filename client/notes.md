@@ -2,6 +2,7 @@
 
 * fix link detection (server side)
 * (re-)add pinned entries
+* pagination
 * maybe add direct toggle for private/pinning
 * delete entries, inactivate maybe?
 * rework CSS
