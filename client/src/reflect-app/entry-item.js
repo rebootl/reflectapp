@@ -13,6 +13,9 @@ const style = html`
       margin-top: 16px;
       margin-bottom: 16px;
     }
+    div {
+      display: flex;
+    }
     tag-small {
       margin-right: 5px;
     }
@@ -39,10 +42,12 @@ class EntryItem extends HTMLElement {
     render(html`${style}
         <entry-header .entry=${this.entry}></entry-header>
         <entry-content .entry=${this.entry}></entry-content>
-        ${this.entry.topics.map((t) =>
-          html`<tag-small type="topic">${t}</tag-small>`)}
-        ${this.entry.tags.map((t) =>
-          html`<tag-small type="tag">${t}</tag-small>`)}
+        <div>
+          ${this.entry.topics.map((t) =>
+            html`<tag-small type="topic">${t}</tag-small>`)}
+          ${this.entry.tags.map((t) =>
+            html`<tag-small type="tag">${t}</tag-small>`)}
+        </div>
       `, this.shadowRoot);
   }
 }
