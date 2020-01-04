@@ -111,11 +111,16 @@ class EntryCreate extends HTMLElement {
     //this.update();
     const db = await api.getSource('entries');
     const date = new Date();
+    // remove duplicates
+    const newTopics = this.newTopics.filter((t) =>
+      !this.activeTopics.includes(t));
+    const newTags = this.newTags.filter((t) =>
+      !this.activeTags.includes(t));
     let entry = {
       ...this.entry,
       date: date,
-      topics: [ ...this.activeTopics, ...this.newTopics ],
-      tags: [ ...this.activeTags, ...this.newTags ],
+      topics: [ ...this.activeTopics, ...newTopics ],
+      tags: [ ...this.activeTags, ...newTags ],
       private: _private,
     };
     // create id/ref
@@ -147,25 +152,25 @@ class EntryCreate extends HTMLElement {
     render(html`${style}
       <div>
         <entry-input @ready=${(e)=>{this.inputReady = e.detail}}
-                     @inputchange=${(e)=>{this.entry = e.detail}}></entry-input>
+          @inputchange=${(e)=>{this.entry = e.detail}}></entry-input>
       </div>
       <div id="input-overlay" class=${classMap(selectionClasses)}>
         <add-items id="add-topics" label="New Topic..."
-                   @itemschanged=${(e)=>{this.newTopics = e.detail}}></add-items>
+          @itemschanged=${(e)=>{this.newTopics = e.detail}}></add-items>
         <topics-list .activeTopics=${this.activeTopics}
-                     @selectionchanged=${(e)=>{this.activeTopics = e.detail}}>
+          @selectionchanged=${(e)=>{this.activeTopics = e.detail}}>
         </topics-list>
         <add-items id="add-tags" label="New Tag..."
-                   @itemschanged=${(e)=>{this.newTags = e.detail}}></add-items>
+          @itemschanged=${(e)=>{this.newTags = e.detail}}></add-items>
         <subtags-list .activeTopics=${this.activeTopics} .activeSubtags=${this.activeTags}
-                      @selectionchanged=${(e)=>{this.activeTags = e.detail}}>
+          @selectionchanged=${(e)=>{this.activeTags = e.detail}}>
         </subtags-list>
       </div>
       <div id="buttonsBox" class=${classMap(buttonBoxClasses)}>
         <labelled-button class="inline" ?disabledstyle=${!this.valid}
-                         @click=${()=>this.add_entry(false)} label="Create"></labelled-button>
+          @click=${()=>this.add_entry(false)} label="Create"></labelled-button>
         <labelled-button class="inline" ?disabledstyle=${!this.valid}
-                         @click=${()=>this.add_entry(true)} label="Create Private"></labelled-button>
+          @click=${()=>this.add_entry(true)} label="Create Private"></labelled-button>
       </div>
       `, this.shadowRoot);
   }

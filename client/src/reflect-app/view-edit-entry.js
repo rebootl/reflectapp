@@ -108,15 +108,18 @@ class ViewEditEntry extends HTMLElement {
     // alternative: set input via query
     const result = this.shadowRoot.querySelector('entry-input').result;
     //console.log("result: ", result);
-    this.activeTopics = [ ...this.activeTopics, ...this.newTopics ];
-    this.activeTags = [ ...this.activeTags, ...this.newTags ];
+    // remove duplicates
+    const newTopics = this.newTopics.filter((t) =>
+      !this.activeTopics.includes(t));
+    const newTags = this.newTags.filter((t) =>
+      !this.activeTags.includes(t));
     const entry = {
       ...result,
       id: this.oldEntry.id,
       date: this.oldEntry.date,
       mdate: mdate,
-      topics: this.activeTopics,
-      tags: this.activeTags,
+      topics: [ ...this.activeTopics, ...newTopics ],
+      tags: [ ...this.activeTags, ...newTags ],
       private: _private,
     };
     //console.log("entry: ", entry);
