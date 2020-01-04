@@ -1,4 +1,5 @@
 import { html, render } from 'lit-html';
+// (used in add topics/tags)
 
 const style = html`
   <style>
@@ -21,7 +22,8 @@ class ItemSmall extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
-
+  }
+  connectedCallback() {
     this.update();
   }
   update() {

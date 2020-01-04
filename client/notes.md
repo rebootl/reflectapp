@@ -1,5 +1,7 @@
 ## ToDo
 
+* make subdirectories
+* check for multiple topics/tags => DONE
 * fix link detection (server side)
 * (re-)add pinned entries
 * pagination

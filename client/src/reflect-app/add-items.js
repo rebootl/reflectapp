@@ -1,7 +1,7 @@
 import { html, render } from 'lit-html';
 import './gen-elements/text-input.js';
 import './gen-elements/labelled-button.js';
-import './item-small.js';
+import './gen-elements/item-small.js';
 
 const style = html`
   <style>
