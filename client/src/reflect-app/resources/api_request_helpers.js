@@ -30,13 +30,14 @@ export const apiGetRequest = async (apiUrl, header) => {
   }
   const data = await response.json();
   if (!data.success) {
-    const e = new Error(data.err_msg);
+    const e = new Error(data.errorMessage);
     e.code = 'ERESPONSE';
     throw e;
   }
   return data;
 }
 
+// deprecated => remove
 export const api_req_get = async (api_url, header) => {
   try {
     const response = await fetch(api_url, {
