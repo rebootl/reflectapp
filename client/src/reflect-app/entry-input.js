@@ -28,6 +28,9 @@ const style = html`
       display: inline;
       margin-right: 5px;
     }
+    #linktitle {
+      color: var(--light-text-med-emph);
+    }
     #comment {
       display: none;
       margin-bottom: 5px;
@@ -69,7 +72,9 @@ class EntryInput extends HTMLElement {
   }
   set status(v) {
     this._status = v;
-    this.ready = this._status === 'complete' ? true : false;
+    // include pending here in order to avoid "flickering" of
+    // selection display
+    this.ready = (v === 'complete' || v === 'pending') ? true : false;
     this.update();
   }
   get status() {
@@ -118,19 +123,34 @@ class EntryInput extends HTMLElement {
       url_info_url + '?url=' + encodeURIComponent(url),
       get_auth_header()
     )
-      .then(data=>{
-        this.result = {...this.result, info: data.cont_type, title: data.title};
+      .then(data => {
+        // shorten the content type string from utf-iso-blabla stuff..
+        const contentType = data.contentType.startsWith('text/html') ?
+          'text/html' : data.contentType;
+        this.result = {
+          ...this.result,
+          info: contentType,
+          title: data.title
+        };
         this.status = 'complete';
       })
       .catch((e)=>{
         if (e.code === 'ERESPONSE') {
-          this.result = { ...this.result, type: 'brokenlink',
-            info: "broken link :(", title: e.message};
+          this.result = {
+            ...this.result,
+            type: 'brokenlink',
+            info: "broken link :(",
+            title: e.message
+          };
           this.status = 'complete';
         } else {
           console.log("url info request error: " + e.message);
-          this.result = {...this.result, info: "(url info request failed...)",
-            title: ""};
+          console.log(e);
+          this.result = {
+            ...this.result,
+            info: "(url info request failed...)",
+            title: ""
+          };
           this.status = 'complete';
         }
       });
@@ -181,7 +201,7 @@ class EntryInput extends HTMLElement {
     if (this.result.type === 'link' && this.status === 'complete') {
       return html`<tag-small type="link">Link</tag-small>
                   <tag-small type="linkinfo">${this.result.info}</tag-small>
-                  <small>${this.result.title}</small>`;
+                  <small>Title: <span id="linktitle">${this.result.title}</span></small>`;
     }
     if (this.result.type === 'brokenlink' && this.status === 'complete') {
       return html`<tag-small type="link">Link</tag-small>
@@ -193,7 +213,8 @@ class EntryInput extends HTMLElement {
     return html`<small>Autodetect<small>`;
   }
   update() {
-    const commentClasses = { active: this.result.type === 'link' };
+    const commentClasses = { active: (this.result.type === 'link' ||
+      this.result.type === 'brokenlink') };
     let loadtext = "";
     let loadcomment = "";
     if (this.oldEntry.type === 'note') loadtext = this.oldEntry.text;

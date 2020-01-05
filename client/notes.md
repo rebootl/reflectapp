@@ -1,6 +1,12 @@
 ## ToDo
 
-* fix link detection (server side)
+* fix link detection (server side) => WIP
+* cleanup/remove old request functions
+* detection trigger not 100% reliable, i think if the detection takes
+  longer than the input it will not re-trigger after input is finished,
+  tho it's probably not too terrible cause links will be pasted most of
+  the time...
+* fix spacing on link tags
 * (re-)add pinned entries
 * delete entries, inactivate maybe?
 * pagination
@@ -18,7 +24,7 @@
   - use connectedCallback for all elements
 * make "input-overlay" it's own component
 * flash message after saving, message system?
-* fix the flickering during link input
+* fix the flickering during link input => DONE
 * reset selection if input "emptied" in create-entry
   (needs fixing in the reset functions to prevent too much recursion)
 * router
