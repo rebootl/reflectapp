@@ -5,7 +5,7 @@ import { getAuthHeader, loggedIn } from './auth.js';
 
 // request/server urls
 export const login_url = '/api/login';
-export const url_info_url = '/api/url_info';
+export const url_info_url = '/api/urlinfo';
 
 // api
 export const api = new API(window.location.origin.toString() + '/api/',
