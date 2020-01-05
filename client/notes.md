@@ -1,49 +1,49 @@
 ## ToDo
 
-* fix link detection (server side) => WIP
+* (re-)add pinned entries
+* delete entries, inactivate maybe?
+* pagination
+* edit preview
 * cleanup/remove old request functions
+* rework CSS
+* re-login necessary after server update,
+  otherwise new entries/edits not shown
 * detection trigger not 100% reliable, i think if the detection takes
   longer than the input it will not re-trigger after input is finished,
   tho it's probably not too terrible cause links will be pasted most of
   the time...
 * fix spacing on link tags
-* (re-)add pinned entries
-* delete entries, inactivate maybe?
-* pagination
-* edit preview
-* prevent creating duplicate tags inside add-items (would be nice)
-* re-login necessary after server update,
-  otherwise new entries/edits not shown
-* make subdirectories for components
+* early prevent creating duplicate tags inside add-items (would be nice)
+* improve client filestructure (make subdirectories for components)
 * maybe add direct toggle for private/pinning
 * maybe rework edit-input to "query" input instead
-* rework CSS
 * cleanups
   - cleanup console logs, more cleanups?
   - cleanup function naming (camelCase)
   - use connectedCallback for all elements
 * make "input-overlay" it's own component
 * flash message after saving, message system?
-* fix the flickering during link input => DONE
 * reset selection if input "emptied" in create-entry
   (needs fixing in the reset functions to prevent too much recursion)
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router
-* integrate project-Data => DONE
 * accessibility: topics-list not using keyboard tabs
 * use service worker for offline capability
 * check script/view for duplicate id's, broken links
 * encrypt private entries
 
-### Test
+### Test in production LUL
 
+* fix the flickering during link input => DONE
+* fix link detection (server side) => DONE
 * storing entry when unchanged results in empty text => DONE, TEST IN PRODUCTION
 * tag after creation not active, can lead to accidental deletion
   when saving again => FIXED
 
 ### Done
 
+* integrate project-Data => DONE
 * check for multiple topics/tags => DONE
 * console log link info request error, instead of using it in title => DONE
 * empty comment should be empty string => DONE
