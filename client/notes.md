@@ -1,13 +1,16 @@
 ## ToDo
 
-* make subdirectories
-* check for multiple topics/tags => DONE
 * fix link detection (server side)
 * (re-)add pinned entries
+* delete entries, inactivate maybe?
 * pagination
+* edit preview
+* prevent creating duplicate tags inside add-items (would be nice)
+* re-login necessary after server update,
+  otherwise new entries/edits not shown
+* make subdirectories for components
 * maybe add direct toggle for private/pinning
 * maybe rework edit-input to "query" input instead
-* delete entries, inactivate maybe?
 * rework CSS
 * cleanups
   - cleanup console logs, more cleanups?
@@ -30,9 +33,12 @@
 ### Test
 
 * storing entry when unchanged results in empty text => DONE, TEST IN PRODUCTION
+* tag after creation not active, can lead to accidental deletion
+  when saving again => FIXED
 
 ### Done
 
+* check for multiple topics/tags => DONE
 * console log link info request error, instead of using it in title => DONE
 * empty comment should be empty string => DONE
 * remove console log view-single-entry => DONE

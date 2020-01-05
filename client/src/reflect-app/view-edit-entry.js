@@ -113,13 +113,15 @@ class ViewEditEntry extends HTMLElement {
       !this.activeTopics.includes(t));
     const newTags = this.newTags.filter((t) =>
       !this.activeTags.includes(t));
+    this.activeTopics = [ ...this.activeTopics, ...newTopics ];
+    this.activeTags = [ ...this.activeTags, ...newTags ];
     const entry = {
       ...result,
       id: this.oldEntry.id,
       date: this.oldEntry.date,
       mdate: mdate,
-      topics: [ ...this.activeTopics, ...newTopics ],
-      tags: [ ...this.activeTags, ...newTags ],
+      topics: this.activeTopics,
+      tags: this.activeTags,
       private: _private,
     };
     //console.log("entry: ", entry);
