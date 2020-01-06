@@ -24,12 +24,41 @@ const style = html`
     :host(.list-padding) {
       padding: 2px 35px 5px 35px;
     }
+    a {
+      color: var(--primary);
+    }
     .emoji {
       height: 1.5em;
       vertical-align: middle;
     }
-    a {
-      color: var(--primary);
+    #linkbox {
+      display: inline-block;
+      border: 1px solid var(--on-background-border);
+      border-radius: 4px;
+      padding: 10px 15px 10px 15px;
+      position: relative;
+    }
+    #linkbox:hover {
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+    #clickspan {
+      position:absolute;
+      width:100%;
+      height:100%;
+      top:0;
+      left: 0;
+      z-index: 1;
+    }
+    #linktitle {
+      margin: 0;
+      margin-top: 3px;
+    }
+    #linkinfo {
+      color: var(--light-text-low-emph);
+    }
+    #linkcomment {
+      margin: 0;
+      color: var(--light-text-low-emph);
     }
   </style>
 `;
@@ -53,11 +82,15 @@ class EntryContent extends HTMLElement {
     if (this.entry.type === 'note') {
       return html`${unsafeHTML(md.render(this.entry.text))}`;
     } else if (this.entry.type === 'link' || this.entry.type === 'brokenlink') {
-      return html`<p id="linktitle">${this.entry.title}</p>
-        <a href=${this.entry.url}>${this.entry.url}</a><br />
-        <small>${this.entry.info}</small>
-        ${ this.entry.comment !== "" ? html`<p id="linkcomment"
-          >Comment: ${this.entry.comment}</p>` : html`` }
+      return html`
+        <div id="linkbox">
+          <small><a href=${this.entry.url}><span id="clickspan"
+            ></span>${this.entry.url}</a></small>
+          <!--<small id="linkinfo">${this.entry.info}</small>-->
+          <p id="linktitle">${this.entry.title}</p>
+          ${ this.entry.comment !== "" ? html`<small id="linkcomment"
+            >${this.entry.comment}</small>` : html`` }
+        </div>
       `;
     }
   }

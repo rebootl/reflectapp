@@ -1,18 +1,20 @@
 ## ToDo
 
+* cannot access in private mode?
 * (re-)add pinned entries
 * delete entries, inactivate maybe?
 * pagination
 * edit preview
 * cleanup/remove old request functions
 * rework CSS
+* protect url info request route
 * re-login necessary after server update,
   otherwise new entries/edits not shown
 * detection trigger not 100% reliable, i think if the detection takes
   longer than the input it will not re-trigger after input is finished,
   tho it's probably not too terrible cause links will be pasted most of
   the time...
-* fix spacing on link tags
+* fix spacing on link detection labels -> try using flex
 * early prevent creating duplicate tags inside add-items (would be nice)
 * improve client filestructure (make subdirectories for components)
 * maybe add direct toggle for private/pinning

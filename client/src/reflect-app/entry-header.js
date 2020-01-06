@@ -50,7 +50,7 @@ class EntryHeader extends HTMLElement {
                 <small class="le-header-text">
                   ${moment(new Date(this.entry.date)).format('ddd MMM D YYYY - HH:mm:ss')}
                   ${ this.entry.private ? html`(private)` : html``}
-                  <a href="#entry?id=${this.entry.id}">link</a>
+                  <a href="#entry?id=${this.entry.id}">view</a>
                   ${ loggedIn() ? html`<a class="edit-link" href="#edit-entry?id=${this.entry.id}">edit</a>` : '' }
                 </small>
       `, this.shadowRoot);
