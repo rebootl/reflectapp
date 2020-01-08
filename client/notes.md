@@ -1,7 +1,7 @@
 ## ToDo
 
-* cannot access in private mode?
-* (re-)add pinned entries
+* projectdata not loading on ffox mobile -> transpile? :/
+* (re-)add pinned entries => WIP, also making buttons and icons etc.
 * delete entries, inactivate maybe?
 * pagination
 * edit preview
@@ -45,6 +45,7 @@
 
 ### Done
 
+* cannot access in private mode? => WONTFIX, indexdb doesn't work
 * integrate project-Data => DONE
 * check for multiple topics/tags => DONE
 * console log link info request error, instead of using it in title => DONE

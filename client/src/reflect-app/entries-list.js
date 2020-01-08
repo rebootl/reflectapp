@@ -18,7 +18,6 @@ const style = html`
       border-bottom: 1px solid var(--on-background-border);
     }
     entry-item {
-      margin: 15px 20px 15px 20px;
     }
   </style>
 `;

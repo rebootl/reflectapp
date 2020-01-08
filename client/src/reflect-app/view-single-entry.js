@@ -9,7 +9,7 @@ const style = html`
       box-sizing: border-box;
     }
     entry-item {
-      margin: 20px;
+      margin-top: 5px;
     }
     pre {
       margin: 20px;

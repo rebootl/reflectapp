@@ -1,7 +1,6 @@
 import { html, render } from 'lit-html';
-import { loggedIn } from './resources/auth.js';
-//import format from 'date-fns/format';
 import moment from 'moment';
+import './gen-elements/icon-button.js';
 
 const style = html`
   <style>
@@ -20,12 +19,6 @@ const style = html`
     }*/
     a {
       color: var(--primary);
-    }
-    .edit-link {
-      float: right;
-    }
-    :host([noedit]) .edit-link {
-      display: none;
     }
   </style>
 `;
@@ -51,7 +44,6 @@ class EntryHeader extends HTMLElement {
                   ${moment(new Date(this.entry.date)).format('ddd MMM D YYYY - HH:mm:ss')}
                   ${ this.entry.private ? html`(private)` : html``}
                   <a href="#entry?id=${this.entry.id}">view</a>
-                  ${ loggedIn() ? html`<a class="edit-link" href="#edit-entry?id=${this.entry.id}">edit</a>` : '' }
                 </small>
       `, this.shadowRoot);
   }

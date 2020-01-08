@@ -13,8 +13,6 @@ const style = html`
       border-radius: 3px;
       padding: 10px;
       line-height: 1.6em;
-      font-size: 16px;
-      font-family: sans-serif;
       color: var(--light-text-med-emph);
     }
     /* improve focus on firefox (dotted line) */
