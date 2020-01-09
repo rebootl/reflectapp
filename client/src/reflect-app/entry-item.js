@@ -22,19 +22,16 @@ const style = html`
       display: flex;
       flex-direction: column;
       height: 100%;
-      /*justify-content: space-evenly;*/
     }
     .editbutton {
-      margin-top: 5px;
-      margin-right: 5px;
+      margin-top: 10px;
+      margin-right: 10px;
     }
-    /* add padding space for buttons */
+    /* add padding space for buttons,
+       still needed tho? */
     .loggedIn {
       padding-right: 35px;
     }
-    /*entry-header {
-      z-index: 1;
-    }*/
     entry-content {
       margin-top: 16px;
       margin-bottom: 16px;
@@ -73,10 +70,7 @@ class EntryItem extends HTMLElement {
               title="edit entry"
               @click=${(e)=>window.location.hash = "#edit-entry?id=" + this.entry.id}
               ></icon-button>
-            <!--<icon-button id="pinbutton" class="editbutton" type="pin"
-              title="pin/unpin entry"
-              @click=${this.togglePinned}></icon-button>
-          </div>-->` : '' }
+          ` : '' }
         <div class=${classMap(loggedInClass)}>
           <entry-header .entry=${this.entry}></entry-header>
           <entry-content .entry=${this.entry}></entry-content>
