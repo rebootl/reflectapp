@@ -15,8 +15,11 @@ const style = html`
       padding: 3px;
     }
     :host([type=tag]) {
-      border: 2px solid var(--on-surface-line);
+      border: 1px solid var(--on-surface-line);
       color: var(--light-text-med-emph);
+      border-radius: 9px;
+      padding-left: 5px;
+      padding-right: 5px;
     }
     :host([type=note]) {
       background-color: var(--light-text-med-emph);
