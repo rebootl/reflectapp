@@ -20,8 +20,6 @@ const style = html`
     a {
       text-decoration: none;
     }
-    entry-item {
-    }
   </style>
 `;
 

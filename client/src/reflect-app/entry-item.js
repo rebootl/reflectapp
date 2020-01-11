@@ -18,7 +18,6 @@ const style = html`
       position: absolute;
       right: 0;
       top: 0;
-      z-index: 10;
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -66,10 +65,12 @@ class EntryItem extends HTMLElement {
     render(html`${style}
         ${ loggedIn() ? html`
           <div id="editbuttons">
-            <icon-button id="editbutton" class="editbutton" type="edit"
-              title="edit entry"
-              @click=${(e)=>window.location.hash = "#edit-entry?id=" + this.entry.id}
-              ></icon-button>
+            <a href="#edit-entry?id=${this.entry.id}">
+              <icon-button id="editbutton" class="editbutton" type="edit"
+                title="edit entry"
+                ></icon-button>
+            </a>
+          </div>
           ` : '' }
         <div class=${classMap(loggedInClass)}>
           <entry-header .entry=${this.entry}></entry-header>
