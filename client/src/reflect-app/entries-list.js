@@ -17,6 +17,9 @@ const style = html`
     li {
       border-bottom: 1px solid var(--on-background-border);
     }
+    a {
+      text-decoration: none;
+    }
     entry-item {
     }
   </style>
@@ -66,7 +69,7 @@ class EntriesList extends HTMLElement {
       ${observableList(
           this.entries,
           (v, i) => html`
-            <li><entry-item .entry=${v}></entry-item></li>
+            <li><a href="#entry?id=${v.id}"><entry-item .entry=${v}></entry-item></a></li>
           `,
           html`<pre>loading...</pre>`
         )}

@@ -1,5 +1,7 @@
 ## ToDo
 
+* improve small tags style
+* icon-button focus in chromium pixel error at bottom
 * projectdata not loading on ffox mobile -> transpile? :/
 * (re-)add pinned entries => WIP, also making buttons and icons etc.
 * delete entries, inactivate maybe?
