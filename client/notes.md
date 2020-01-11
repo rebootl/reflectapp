@@ -1,12 +1,11 @@
 ## ToDo
 
-* improve small tags style
-* icon-button focus in chromium pixel error at bottom
-* projectdata not loading on ffox mobile -> transpile? :/
-* (re-)add pinned entries => WIP, also making buttons and icons etc.
+* add pinned entries => DONE, also made buttons and icons etc.
 * delete entries, inactivate maybe?
 * pagination
 * edit preview
+* icon-button focus in chromium pixel error at bottom
+* projectdata not loading on ffox mobile -> transpile? :/
 * cleanup/remove old request functions
 * rework CSS
 * protect url info request route
@@ -47,6 +46,7 @@
 
 ### Done
 
+* improve small tags style => DONE
 * cannot access in private mode? => WONTFIX, indexdb doesn't work
 * integrate project-Data => DONE
 * check for multiple topics/tags => DONE

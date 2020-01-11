@@ -100,6 +100,7 @@ class ViewEditEntry extends HTMLElement {
     const db = await api.getSource('entries');
     const mdate = new Date();
     const _private = this.shadowRoot.querySelector('#privateCheckbox').value;
+    const pinned = this.shadowRoot.querySelector('#pinnedCheckbox').value;
     // there are problems when relying on the "updated" this.entry alone
     // e.g. changing the text and then afterwards changing the topics
     // results in the oldEntry text to be set in this.entry and stored,
@@ -123,6 +124,7 @@ class ViewEditEntry extends HTMLElement {
       topics: this.activeTopics,
       tags: this.activeTags,
       private: _private,
+      pinned: pinned,
     };
     //console.log("entry: ", entry);
     await db.update({ id: this.oldEntry.id }, entry);
@@ -152,6 +154,7 @@ class ViewEditEntry extends HTMLElement {
               ></labelled-button>
             <a href="/#entries">Cancel</a>
             <labelled-checkbox id="privateCheckbox" ?checked=${this.oldEntry.private}>Private</labelled-checkbox>
+            <labelled-checkbox id="pinnedCheckbox" ?checked=${this.oldEntry.pinned}>Pin</labelled-checkbox>
           </div>
           <pre>[preview todo]</pre>
           <div id="input-overlay">

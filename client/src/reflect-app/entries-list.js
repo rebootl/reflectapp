@@ -42,14 +42,14 @@ class EntriesList extends HTMLElement {
   updateQuery() {
     if (this.activeTopics < 1) {
       this.entries.query([
-        {$sort: {date: -1}},
+        {$sort: { pinned: -1, date: -1 }},
       ]);
     } else if (this.activeTags < 1) {
       this.entries.query([
         { $match: { $and: [
           { topics: { $in: this.activeTopics } }
         ] } },
-        { $sort: {date: -1 }},
+        { $sort: { pinned: -1, date: -1 }},
       ]);
     } else {
       this.entries.query([
@@ -57,7 +57,7 @@ class EntriesList extends HTMLElement {
           { topics: { $in: this.activeTopics } },
           { tags: { $in: this.activeTags } }
         ] } },
-        { $sort: {date: -1 }},
+        { $sort: { pinned: -1, date: -1 }},
       ]);
     }
   }
