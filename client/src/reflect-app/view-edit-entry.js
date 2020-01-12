@@ -12,7 +12,6 @@ const style = html`
     }
     entry-input {
       margin-top: 20px;
-      margin-bottom: 10px;
     }
     a {
       color: var(--primary);
@@ -20,7 +19,11 @@ const style = html`
     pre {
       color: var(--light-text-med-emph);
     }
+    labelled-button {
+      margin-top: 10px;
+    }
     labelled-checkbox {
+      margin-top: 10px;
       margin-left: 20px;
     }
     #input-overlay {
@@ -28,6 +31,21 @@ const style = html`
       margin-bottom: 10px;
       border-radius: 5px;
       overflow: hidden;
+    }
+    #buttonsBox {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .boxItem {
+      margin-right: 10px;
+    }
+    #cancelButton {
+      margin-top: 5px;
+    }
+    #deleteButton {
+      /* align to the right */
+      margin-left: auto;
     }
   </style>
 `;
@@ -130,10 +148,18 @@ class ViewEditEntry extends HTMLElement {
     await db.update({ id: this.oldEntry.id }, entry);
     console.log("updated entry!!");
     console.log("id: " + entry.id);
-    if (close) window.location.hash = "#entries";
+    if (close) window.history.back();
     // reset stuff
     this.shadowRoot.querySelector('#add-topics').reset();
     this.shadowRoot.querySelector('#add-tags').reset();
+  }
+  async deleteEntry() {
+    if (!confirm("Do you really want to delete this entry!")) return;
+    const db = await api.getSource('entries');
+    await db.delete({ id: this.oldEntry.id });
+    console.log("entry deleted!!");
+    console.log("id: " + this.oldentry.id);
+    window.history.back();
   }
   update() {
     render(html`${style}
@@ -146,15 +172,20 @@ class ViewEditEntry extends HTMLElement {
             cols="45" rows=${this.oldEntry.type === 'note' ? 10 : 1}
             ></entry-input>
           <div id="buttonsBox">
-            <labelled-button class="inline" ?disabled=${!this.valid}
+            <labelled-button class="boxItem" ?disabled=${!this.valid}
               @click=${()=>this.saveEntry()} label="Save"
               ></labelled-button>
-            <labelled-button class="inline" ?disabled=${!this.valid}
+            <labelled-button class="boxItem" ?disabled=${!this.valid}
               @click=${()=>this.saveEntry(true)} label="Save and Close"
               ></labelled-button>
-            <a href="/#entries">Cancel</a>
-            <labelled-checkbox id="privateCheckbox" ?checked=${this.oldEntry.private}>Private</labelled-checkbox>
-            <labelled-checkbox id="pinnedCheckbox" ?checked=${this.oldEntry.pinned}>Pin</labelled-checkbox>
+            <a id="cancelButton" class="boxItem" href="javascript:history.back()">Cancel</a>
+            <labelled-checkbox id="privateCheckbox"
+              ?checked=${this.oldEntry.private}>Private</labelled-checkbox>
+            <labelled-checkbox id="pinnedCheckbox" class="boxItem"
+              ?checked=${this.oldEntry.pinned}>Pin</labelled-checkbox>
+            <labelled-button id="deleteButton" ?disabled=${!this.valid} warn
+              @click=${()=>this.deleteEntry(true)} label="Delete"
+            ></labelled-button>
           </div>
           <pre>[preview todo]</pre>
           <div id="input-overlay">

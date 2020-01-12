@@ -1,51 +1,66 @@
 ## ToDo
 
-* add pinned entries => DONE, also made buttons and icons etc.
-* delete entries, inactivate maybe?
-* pagination
-* edit preview
-* icon-button focus in chromium pixel error at bottom
-* projectdata not loading on ffox mobile -> transpile? :/
+### Bugs / code cleanup
+
+* projectdata not loading on ffox mobile -> transpile maybe?
 * cleanup/remove old request functions
-* rework CSS
-* protect url info request route
-* re-login necessary after server update,
-  otherwise new entries/edits not shown
-* detection trigger not 100% reliable, i think if the detection takes
-  longer than the input it will not re-trigger after input is finished,
-  tho it's probably not too terrible cause links will be pasted most of
-  the time...
-* fix spacing on link detection labels -> try using flex
-* early prevent creating duplicate tags inside add-items (would be nice)
 * improve client filestructure (make subdirectories for components)
-* maybe add direct toggle for private/pinning
-* maybe rework edit-input to "query" input instead
 * cleanups
   - cleanup console logs, more cleanups?
   - cleanup function naming (camelCase)
   - use connectedCallback for all elements
+* re-login necessary after server update,
+  otherwise new entries/edits not shown => CONFIRM
+* detection trigger not 100% reliable, i think if the detection takes
+  longer than the input it will not re-trigger after input is finished,
+  tho it's probably not too terrible cause links will be pasted most of
+  the time...
 * make "input-overlay" it's own component
-* flash message after saving, message system?
-* reset selection if input "emptied" in create-entry
-  (needs fixing in the reset functions to prevent too much recursion)
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router
-* accessibility: topics-list not using keyboard tabs
+
+### Features
+
+* back button for single entry view
+* add images
+* pagination
+* edit preview
+* search
+* multi-user/platform POG
+* hide/show menu
+* online/offline indicator
+* protect url info request route => ?
+* early prevent creating duplicate tags inside add-items (would be nice)
+* maybe rework edit-input to "query" input instead
+* flash message after saving, message system?
+* reset selection if input "emptied" in create-entry
+  (needs fixing in the reset functions to prevent too much recursion)
 * use service worker for offline capability
 * check script/view for duplicate id's, broken links
 * encrypt private entries
 
+### Design/UI/UX adaptions/improvements
+
+* rework CSS
+* accessibility: topics-list not using keyboard tabs
+* icon-button focus in chromium pixel error at bottom
+* fix spacing on link detection labels -> try using flex
+
 ### Test in production LUL
 
+* add pinned entries => DONE, also made buttons and icons etc.
 * fix the flickering during link input => DONE
 * fix link detection (server side) => DONE
-* storing entry when unchanged results in empty text => DONE, TEST IN PRODUCTION
+* storing entry when unchanged results in empty text => DONE
 * tag after creation not active, can lead to accidental deletion
   when saving again => FIXED
 
 ### Done
 
+* delete entries => DONE, inactivate maybe later
+* maybe add direct toggle for private/pinning => NOPE, would lead to
+  cluttered UI
 * improve small tags style => DONE
 * cannot access in private mode? => WONTFIX, indexdb doesn't work
 * integrate project-Data => DONE

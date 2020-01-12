@@ -6,6 +6,10 @@ const style = html`
       display: inline-block;
       box-sizing: border-box;
     }
+    :host([warn]) {
+      background-color: rgb(225, 0, 20);
+      border-radius: 5px;
+    }
     button {
       background-color: rgba(0, 0, 0, 0.4);
       color: var(--light-text-hig-emph);
