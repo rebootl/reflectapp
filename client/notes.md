@@ -7,9 +7,6 @@
 
 ### Bugs / code cleanup
 
-* sorting not correct sometimes
-  -> caused by missing pinned attr.?
-  => fixed by editing/resaving entries
 * projectdata not loading on ffox mobile -> transpile maybe?
 * cleanup/remove old request functions
 * improve client filestructure (make subdirectories for components)
@@ -61,15 +58,18 @@
 
 ### Test in production LUL
 
-* add pinned entries => DONE, also made buttons and icons etc.
-* fix the flickering during link input => DONE
-* fix link detection (server side) => DONE
 * storing entry when unchanged results in empty text => DONE
 * tag after creation not active, can lead to accidental deletion
   when saving again => FIXED
 
 ### Done
 
+* sorting not correct sometimes
+  -> caused by missing pinned attr.?
+  => FIXED by editing/resaving entries
+* fix the flickering during link input => DONE
+* fix link detection (server side) => DONE
+* add pinned entries => DONE, also made buttons and icons etc.
 * redirect after delete not working, also console.log not => FIXED (typo)
 * delete entries => DONE, inactivate maybe later
 * maybe add direct toggle for private/pinning => NOPE, would lead to

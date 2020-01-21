@@ -120,7 +120,7 @@ class ViewEditEntry extends HTMLElement {
       this.oldEntry = entry;
       this.activeTopics = entry.topics;
       this.activeTags = entry.tags;
-      this.currentImages = entry.images;
+      this.currentImages = entry.images || [];
     }
     this.update();
   }
@@ -139,9 +139,11 @@ class ViewEditEntry extends HTMLElement {
     //console.log("result: ", result);
     // handle images
     const currentImageFilenames = this.currentImages.map((i)=>i.filename);
-    for (const image of result.images) {
-      if (!currentImageFilenames.includes(image.filename))
-        this.currentImages.push(image);
+    if (result.images) {
+      for (const image of result.images) {
+        if (!currentImageFilenames.includes(image.filename))
+          this.currentImages.push(image);
+      }
     }
     this.currentImages = this.currentImages.filter((i)=>!i.remove);
     // remove duplicates
