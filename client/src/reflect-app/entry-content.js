@@ -27,6 +27,9 @@ const style = html`
     a {
       color: var(--primary);
     }
+    img {
+      max-width: 100%;
+    }
     .emoji {
       height: 1.5em;
       vertical-align: middle;
@@ -60,8 +63,13 @@ const style = html`
       margin: 0;
       color: var(--light-text-low-emph);
     }
+    #imagecomment {
+      color: var(--light-text-low-emph);
+    }
   </style>
 `;
+
+const hashPlaceholder = "b43677c465ece0cf2c6e4af3004fbe29";
 
 class EntryContent extends HTMLElement {
   get entry() {
@@ -78,10 +86,30 @@ class EntryContent extends HTMLElement {
   connectedCallback() {
     this.update();
   }
+  getHTML() {
+    if (!this.entry.images) return unsafeHTML(md.render(this.entry.text));
+    if (this.entry.images.length === 0) return unsafeHTML(md.render(this.entry.text));
+    const hashedText = this.entry.text.replace(/<image_placeholder .*?>/g, hashPlaceholder);
+    let htmlText = md.render(hashedText);
+    for (const image of this.entry.images) {
+      let imageTag = "";
+      if (image.uploaded) {
+        // -> and currently online
+        imageTag = '<img src="' + image.filepath + '" />';
+      } else {
+        imageTag = '<img src="' + image.previewData + '" />';
+      }
+      htmlText = htmlText.replace(hashPlaceholder, imageTag);
+    }
+    return unsafeHTML(htmlText);
+  }
   getContent() {
-    if (this.entry.type === 'note') {
-      return html`${unsafeHTML(md.render(this.entry.text))}`;
-    } else if (this.entry.type === 'link' || this.entry.type === 'brokenlink') {
+    if (this.entry.type === 'note') return html`${this.getHTML()}`;
+    if (this.entry.type === 'image') {
+      return html`${this.getHTML()}
+        <div><small id="imagecomment">${this.entry.comment}</small></div>`
+    }
+    if (this.entry.type === 'link' || this.entry.type === 'brokenlink') {
       return html`
         <div id="linkbox">
           <small><a href=${this.entry.url}><span id="clickspan"

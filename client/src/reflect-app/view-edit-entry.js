@@ -47,6 +47,15 @@ const style = html`
       /* align to the right */
       margin-left: auto;
     }
+    table {
+      border-collapse: collapse;
+    }
+    td, th {
+      border: 1px solid var(--on-background-border);
+    }
+    img.preview {
+      max-width: 100px;
+    }
   </style>
 `;
 
@@ -107,10 +116,11 @@ class ViewEditEntry extends HTMLElement {
     console.log(entryId);
     const db = await api.getSource('entries');
     const [ entry ] = await db.query({ id: entryId });
-    this.oldEntry = entry;
     if (entry) {
+      this.oldEntry = entry;
       this.activeTopics = entry.topics;
       this.activeTags = entry.tags;
+      this.currentImages = entry.images;
     }
     this.update();
   }
@@ -127,6 +137,13 @@ class ViewEditEntry extends HTMLElement {
     // alternative: set input via query
     const result = this.shadowRoot.querySelector('entry-input').result;
     //console.log("result: ", result);
+    // handle images
+    const currentImageFilenames = this.currentImages.map((i)=>i.filename);
+    for (const image of result.images) {
+      if (!currentImageFilenames.includes(image.filename))
+        this.currentImages.push(image);
+    }
+    this.currentImages = this.currentImages.filter((i)=>!i.remove);
     // remove duplicates
     const newTopics = this.newTopics.filter((t) =>
       !this.activeTopics.includes(t));
@@ -143,6 +160,7 @@ class ViewEditEntry extends HTMLElement {
       tags: this.activeTags,
       private: _private,
       pinned: pinned,
+      images: this.currentImages,
     };
     //console.log("entry: ", entry);
     await db.update({ id: this.oldEntry.id }, entry);
@@ -152,14 +170,20 @@ class ViewEditEntry extends HTMLElement {
     // reset stuff
     this.shadowRoot.querySelector('#add-topics').reset();
     this.shadowRoot.querySelector('#add-tags').reset();
+    this.updateQuery();
   }
   async deleteEntry() {
     if (!confirm("Do you really want to delete this entry!")) return;
     const db = await api.getSource('entries');
     await db.delete({ id: this.oldEntry.id });
     console.log("entry deleted!!");
-    console.log("id: " + this.oldentry.id);
+    console.log("id: " + this.oldEntry.id);
     window.history.back();
+  }
+  toggleImageRemoval(i) {
+    if (i.remove) i.remove = false;
+    else i.remove = true;
+    this.update();
   }
   update() {
     render(html`${style}
@@ -200,9 +224,21 @@ class ViewEditEntry extends HTMLElement {
                           @selectionchanged=${(e)=>{this.activeTags = e.detail}}>
             </subtags-list>
           </div>
-          `
-        :
-        html`<pre>Ooops, entry not found... :/</pre>` }
+          <h2>Images:</h2>
+          <table id="imagetable">
+          ${ this.currentImages ?
+            this.currentImages.map((i) => html`
+              <tr>
+                <td><img class="preview" src="${i.previewData}" /></td>
+                <td>${i.filename}<br><small>${i.placeholder}</small></td>
+                <td>${ i.remove ?
+                  html`Marked for removal!<br><labelled-button
+                    @click=${e=>this.toggleImageRemoval(i)}>Undo</labelled-button>` :
+                  html`<labelled-button warn
+                    @click=${(e)=>this.toggleImageRemoval(i)}>Remove</labelled-button>` }</td>
+              </tr>`)
+            : html`` }`
+        : html`<pre>Ooops, entry not found... :/</pre>` }
       `, this.shadowRoot);
   }
 }

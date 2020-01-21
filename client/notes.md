@@ -1,7 +1,15 @@
 ## ToDo
 
+* jwt renewal?
+* images own source?
+* images access private protected by hash?
+* check if online?
+
 ### Bugs / code cleanup
 
+* sorting not correct sometimes
+  -> caused by missing pinned attr.?
+  => fixed by editing/resaving entries
 * projectdata not loading on ffox mobile -> transpile maybe?
 * cleanup/remove old request functions
 * improve client filestructure (make subdirectories for components)
@@ -22,8 +30,11 @@
 
 ### Features
 
+* add images => WIP
+  - images removal, auto-edit text
+  - display images in "uploadbuffer" (filenames)
+* syntax highlighting
 * back button for single entry view
-* add images
 * pagination
 * edit preview
 * search
@@ -42,6 +53,7 @@
 
 ### Design/UI/UX adaptions/improvements
 
+* add favicon
 * rework CSS
 * accessibility: topics-list not using keyboard tabs
 * icon-button focus in chromium pixel error at bottom
@@ -58,6 +70,7 @@
 
 ### Done
 
+* redirect after delete not working, also console.log not => FIXED (typo)
 * delete entries => DONE, inactivate maybe later
 * maybe add direct toggle for private/pinning => NOPE, would lead to
   cluttered UI

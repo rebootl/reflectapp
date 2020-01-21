@@ -36,6 +36,9 @@ const style = html`
       background-color: var(--error);
       color: var(--on-error);
     }
+    :host([type=image]) {
+      background-color: rgb(230, 240, 45);
+    }
   </style>
 `;
 

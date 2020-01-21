@@ -6,13 +6,13 @@ const style = html`
       display: inline-block;
       box-sizing: border-box;
     }
-    :host([warn]) {
-      background-color: rgb(225, 0, 20);
-      border-radius: 5px;
+    label input[type="file"] {
+      position:absolute;
+      top: -1000px;
     }
-    button {
+    label {
       background-color: rgba(0, 0, 0, 0.4);
-      color: var(--light-text-hig-emph);
+      color: var(--light-text-med-emph);
       border: 2px solid rgba(0, 0, 0, 0.1);
       border-radius: 5px;
       padding: 5px 15px 5px 15px;
@@ -22,13 +22,13 @@ const style = html`
       outline: none;
     }
     /* improve focus on firefox (dotted line) */
-    button::-moz-focus-inner {
+    label::-moz-focus-inner {
       border: 0;
     }
-    button:focus {
+    label:focus {
       border: 2px solid var(--focus);
     }
-    button:disabled {
+    label:disabled {
       color: var(--light-text-low-emph);
       cursor: auto;
     }
@@ -39,8 +39,7 @@ const style = html`
   </style>
 `;
 
-class LabelledButton extends HTMLElement {
-  static get observedAttributes() {return ['disabled', 'disabledstyle']}
+class UploadButton extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
@@ -51,14 +50,19 @@ class LabelledButton extends HTMLElement {
   attributeChangedCallback() {
     this.update();
   }
+  change(e) {
+    this.dispatchEvent(new CustomEvent('change', {detail: e.files}));
+  }
   update() {
     render(html`${style}
-        <button ?disabled=${this.hasAttribute('disabled')}
-          class=${this.hasAttribute('disabledstyle')?'disabled':''}>
-          ${this.getAttribute('label') || html`<slot />`}
-        </button>`
+        <label>
+          <input @change=${(e)=>this.change(e.target)} type="file"
+            accept="image/*" multiple>
+          <span><slot /></span>
+        </label>
+        `
       , this.shadowRoot);
   }
 }
 
-customElements.define('labelled-button', LabelledButton);
+customElements.define('upload-button', UploadButton);

@@ -15,6 +15,9 @@ const style = html`
       position: relative;
       color: var(--light-text-med-emph);
     }
+    #input-box {
+      display: flex;
+    }
     #input-overlay {
       background-color: var(--surface);
       margin-bottom: 10px;
@@ -122,6 +125,7 @@ class EntryCreate extends HTMLElement {
       topics: [ ...this.activeTopics, ...newTopics ],
       tags: [ ...this.activeTags, ...newTags ],
       private: _private,
+      pinned: false
     };
     // create id/ref
     const digest = await digestMessage(JSON.stringify(entry));
@@ -130,6 +134,8 @@ class EntryCreate extends HTMLElement {
       prefix = await getPrefix(entry.text);
     } else if (entry.type === 'link') {
       prefix = "link";
+    } else if (entry.type === 'image') {
+      prefix = "image";
     }
     const id = prefix + "-" + digest.slice(0, 10);
     entry = { ...entry, id };
@@ -150,7 +156,7 @@ class EntryCreate extends HTMLElement {
     const buttonBoxClasses = { active: this.valid };
     const selectionClasses = { active: this.inputReady };
     render(html`${style}
-      <div>
+      <div id="input-box">
         <entry-input @ready=${(e)=>{this.inputReady = e.detail}}
           @inputchange=${(e)=>{this.entry = e.detail}}></entry-input>
       </div>

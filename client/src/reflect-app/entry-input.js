@@ -1,11 +1,13 @@
 import { html, render } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
+import Compressor from 'compressorjs';
 import { apiGetRequest } from './resources/api_request_helpers.js';
 import { url_info_url } from './resources/api-service.js';
 import { get_auth_header } from './resources/auth.js';
 import './gen-elements/textarea-input.js';
 import './gen-elements/text-input.js';
 import './gen-elements/tag-small.js';
+import './gen-elements/upload-button.js';
 
 const style = html`
   <style>
@@ -18,6 +20,10 @@ const style = html`
     textarea-input {
       height: 25px;
     }*/
+    upload-button {
+      margin-top: 7px;
+      margin-left: 5px;
+    }
     #typeDetectionBox {
       /*display: block;*/
       padding: 10px 0 10px 10px;
@@ -55,6 +61,26 @@ function throttle(func, delay=1000) {
   }
 }
 
+const prepareImage = (file, maxWidth=1920, maxHeight=1920) => {
+  return new Promise((res, rej) => {
+    new Compressor(file, {
+      maxWidth,
+      maxHeight,
+      success(result) {
+        // base64encode result
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          res(reader.result);
+        }
+        reader.readAsDataURL(result);
+      },
+      error(err) {
+        rej(err);
+      }
+    });
+  })
+};
+
 class EntryInput extends HTMLElement {
   set oldEntry(v) {
     this._oldEntry = v;
@@ -82,6 +108,7 @@ class EntryInput extends HTMLElement {
   }
   set result(v) {
     this._result = v;
+    //console.log(v);
     this.dispatchEvent(new CustomEvent('inputchange', {detail: v}));
     this.update();
   }
@@ -165,11 +192,17 @@ class EntryInput extends HTMLElement {
     }
     if (text.startsWith("http://") || text.startsWith("https://")) {
       this.status = 'pending';
-      this.result = {url: text, type: 'link', comment: this.comment};
+      this.result = { url: text, type: 'link', comment: this.comment };
       await this.setUrlInfo(text);
       return;
     }
-    this.result = {text: text, type: 'note'};
+    if (/^<image_placeholder .*?>/.test(text)) {
+      this.result = { ...this.result, text: text, type: 'image',
+        comment: this.comment };
+      this.status = 'complete';
+      return
+    }
+    this.result = { ...this.result, text: text, type: 'note' };
     this.status = 'complete';
     return;
   }
@@ -185,6 +218,54 @@ class EntryInput extends HTMLElement {
     })();
     this.detectPending = true;
   }
+  async imageUpload(files) {
+    let newImages = [];
+    for (const file of files) {
+      // check
+      if (!file.type.startsWith('image/')) continue;
+      // generate and insert placeholder
+      const placeholder = `<image_placeholder ${file.name}>`;
+      const textareaInputElement = this.shadowRoot.querySelector('textarea-input');
+      const textareaElement = textareaInputElement.shadowRoot.querySelector('textarea');
+      let prefix = "";
+      if (textareaElement.value !== "" && textareaElement.value.slice(-1) !== '\n')
+        prefix = '\n';
+      const inputText = textareaElement.value += prefix + placeholder + '\n';
+      textareaElement.value = inputText;
+      textareaInputElement.value = inputText;
+
+      // prepare image object
+
+      // optimize into
+      /*
+      const newImages = await Promise.all(files.map(async (file)=>({
+        placeholder: placeholder,
+        filename: file.name,
+        osize: file.osize,
+        type: file.type,
+        lastModified: file.lastModified,
+        previewData: await compress(file, 240, 160),
+        imageData: await compress(file),
+      })));
+      */
+
+      let image = {
+        placeholder: placeholder,
+        filename: file.name,
+        osize: file.osize,
+        type: file.type,
+        lastModified: file.lastModified,
+        previewData: await prepareImage(file, 240, 240),
+        imageData: await prepareImage(file),
+        uploaded: false
+      };
+      newImages.push(image);
+    }
+    this.result = {
+      ...this.result,
+      images: newImages
+    };
+  }
   reset() {
     this.shadowRoot.querySelector('#entry-text').reset();
     this.shadowRoot.querySelector('#comment').reset();
@@ -194,6 +275,8 @@ class EntryInput extends HTMLElement {
   getTypeDetect() {
     if (this.status.detection === 'typing')
       return html`<small>typing...</small>`;
+    if (this.result.type === 'note')
+      return html`<tag-small type="note">Note</tag-small>`;
     if (this.result.type === 'link' && this.status === 'pending') {
       return html`<tag-small type="link">Link</tag-small>
                   <small>getting URL info...</small>`;
@@ -208,25 +291,31 @@ class EntryInput extends HTMLElement {
                   <tag-small type="brokenlink">${this.result.info}</tag-small>
                   <small>${this.result.title}</small>`;
     }
-    if (this.result.type === 'note')
-      return html`<tag-small type="note">Note</tag-small>`;
+    if (this.result.type === 'image')
+      return html`<tag-small type="image">Image</tag-small>`;
     return html`<small>Autodetect<small>`;
   }
   update() {
     const commentClasses = { active: (this.result.type === 'link' ||
-      this.result.type === 'brokenlink') };
+      this.result.type === 'brokenlink') || (this.result.type === 'image') };
     let loadtext = "";
     let loadcomment = "";
     if (this.oldEntry.type === 'note') loadtext = this.oldEntry.text;
-    if (this.oldEntry.type === 'link' || this.oldEntry.type === 'brokenlink') {
+    else if (this.oldEntry.type === 'link' || this.oldEntry.type === 'brokenlink') {
       loadtext = this.oldEntry.url;
+      loadcomment = this.oldEntry.comment;
+    }
+    else if (this.oldEntry.type === 'image') {
+      loadtext = this.oldEntry.text;
       loadcomment = this.oldEntry.comment;
     }
     render(html`${style}
       <textarea-input id="entry-text" rows=${this.rows} cols=${this.cols}
-                  @input=${(e)=>this.triggerDetect(e.target.value.trim())}
+                  @input=${(e)=>this.triggerDetect(e.target.value)}
                   placeholder=${this.placeholder}
                   loadtext=${loadtext}></textarea-input>
+      <upload-button
+        @change=${(e)=>this.imageUpload(e.detail)}>Image(s)...</upload-button>
       <div id="typeDetectionBox">
         <small id="typeDetection">Type: </small>${this.getTypeDetect()}
       </div>
