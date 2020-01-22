@@ -6,9 +6,10 @@
 
   $ docker build -t reflect .
 
-### setup data file
+### setup data file, media dir
 
   $ cp db/db.json_emty db/db.json
+  $ mkdir media
 
 ### create
 
