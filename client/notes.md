@@ -7,6 +7,7 @@
 
 ### Bugs / code cleanup
 
+* image dir must be docker volume!!
 * projectdata not loading on ffox mobile -> transpile maybe?
 * cleanup/remove old request functions
 * improve client filestructure (make subdirectories for components)
@@ -58,12 +59,13 @@
 
 ### Test in production LUL
 
-* storing entry when unchanged results in empty text => DONE
-* tag after creation not active, can lead to accidental deletion
-  when saving again => FIXED
+
 
 ### Done
 
+* storing entry when unchanged results in empty text => DONE
+* tag after creation not active, can lead to accidental deletion
+  when saving again => FIXED
 * sorting not correct sometimes
   -> caused by missing pinned attr.?
   => FIXED by editing/resaving entries
