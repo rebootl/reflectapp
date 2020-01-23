@@ -218,6 +218,10 @@ class EntryInput extends HTMLElement {
     })();
     this.detectPending = true;
   }
+  loadText(text) {
+    this.shadowRoot.querySelector('textarea-input').loadText(text);
+    //this.triggerDetect(text);
+  }
   async imageUpload(files) {
     let newImages = [];
     for (const file of files) {

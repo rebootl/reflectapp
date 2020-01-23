@@ -43,6 +43,10 @@ class TextareaInput extends HTMLElement {
   get loadtext() {
     return this.getAttribute('loadtext') || "";
   }
+  loadText(text) {
+    this.shadowRoot.querySelector('textarea').value = text;
+    this.value = text;
+  }
   constructor() {
     super();
     this.attachShadow({mode: 'open'});

@@ -145,7 +145,14 @@ class ViewEditEntry extends HTMLElement {
           this.currentImages.push(image);
       }
     }
-    this.currentImages = this.currentImages.filter((i)=>!i.remove);
+    const imagesToRemove = this.currentImages.filter((i)=>i.remove);
+    let text = result.text;
+    for (const image of imagesToRemove) {
+      text = text.replace(image.placeholder, '');
+    }
+    this.shadowRoot.querySelector('entry-input').loadText(text);
+    const currentImages = this.currentImages.filter((i)=>!i.remove);
+    // filter image tag
     // remove duplicates
     const newTopics = this.newTopics.filter((t) =>
       !this.activeTopics.includes(t));
@@ -162,7 +169,8 @@ class ViewEditEntry extends HTMLElement {
       tags: this.activeTags,
       private: _private,
       pinned: pinned,
-      images: this.currentImages,
+      images: currentImages,
+      text: text,
     };
     //console.log("entry: ", entry);
     await db.update({ id: this.oldEntry.id }, entry);
