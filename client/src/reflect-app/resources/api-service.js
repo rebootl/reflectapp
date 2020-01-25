@@ -1,22 +1,26 @@
 import { API } from 'projectData-client';
 import { setApi } from 'projectData-client/dist/Inspector.js';
-import faker from 'faker';
-import { getAuthHeader, loggedIn } from './auth.js';
+//import faker from 'faker'; // used for example data creation
+import { getAuthHeaderAPI } from './auth.js';
 
 // request/server urls
-export const login_url = '/api/login';
-export const url_info_url = '/api/urlinfo';
+export const loginUrl = '/api/login';
+export const urlInfoUrl = '/api/urlinfo';
+export const uploadImageUrl = '/api/uploadImage';
 
 // api
-export const api = new API(window.location.origin.toString() + '/api/',
-  getAuthHeader());
+export const api = new API(
+  window.location.origin.toString() + '/api/',
+  getAuthHeaderAPI()
+);
 // set api for inspector
 setApi(api);
 
+// create client side example data
+/*
 export const create_example_data = async function() {
   // api.setparams...
 
-  // create example data
   const db = await api.getSource('entries');
   await db.delete({"topics": { $size: 3 }});
 
@@ -35,3 +39,4 @@ export const create_example_data = async function() {
     console.log('done');
   })();
 }
+*/

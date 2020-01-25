@@ -35,6 +35,30 @@ const style = html`
 </style>
 `;
 
+export async function getValidTags(activeTopics) {
+  const subtagsSource = await api.getSource('entries');
+  const res = await subtagsSource.query([
+    {$unwind: "$topics"},
+    {$project: {
+      topic: "$topics",
+      tags: "$tags",
+      selected: {$in: [
+        "$topics",
+        activeTopics
+      ]}}
+    },
+    {$match: {selected: true}},
+    {$unwind: "$tags"},
+    {$group: {_id: "$tags"}}
+  ]);
+  return res.map((t)=>t._id);
+}
+
+const defaultHeader = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json'
+}
+
 class SubtagsList extends HTMLElement {
   get activeTopics() {
     return this._activeTopics || [];
@@ -88,6 +112,7 @@ class SubtagsList extends HTMLElement {
     ]);
   }
   async updateTagsFromTopics() {
+    // -> why use this function and not update_query?
     const validTags = await getValidTags(this.activeTopics);
     const oldTags = this.activeSubtags;
     this.activeSubtags = this.activeSubtags.filter(t=>validTags.includes(t));

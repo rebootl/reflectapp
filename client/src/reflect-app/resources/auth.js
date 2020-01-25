@@ -1,10 +1,8 @@
-import { api_req_post } from './api_request_helpers.js'
-import { api, login_url } from './api-service.js';
+import { apiPostRequest } from './api_request_helpers.js'
+import { api, loginUrl } from './api-service.js';
 
 export function loggedIn() {
-  if (localStorage.getItem('access_token')) {
-    return true;
-  }
+  if (localStorage.getItem('access_token')) return true;
   return false;
 }
 
@@ -13,17 +11,25 @@ export function getUsername() {
 }
 
 export function getAuthHeader() {
-  if (loggedIn()) {
+  if (loggedIn()) return {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization':  'Bearer ' + localStorage.getItem('access_token')
+  };
+  return {};
+}
+
+// (used by the projectData API api-service.js
+export function getAuthHeaderAPI() {
+  if (loggedIn())
     return {
       'Authorization':  'Bearer ' + localStorage.getItem('access_token')
-    }
-  } else {
-    return {}
-  }
+    };
+  return {};
 }
 
 export async function login(username, pw) {
-  const login_resp = await api_req_post(login_url, {
+  const login_resp = await apiPostRequest(loginUrl, {
     username: username,
     password: pw
   });
@@ -47,16 +53,4 @@ export async function logout() {
   localStorage.removeItem('access_token');
   await api.setParams({});
   await api.reset();
-}
-
-export function get_auth_header() {
-  if (loggedIn()) {
-    return {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization':  'Bearer ' + localStorage.getItem('access_token')
-    }
-  } else {
-    return {}
-  }
 }
