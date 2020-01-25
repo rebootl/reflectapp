@@ -1,4 +1,9 @@
 
+const defaultHeader = {
+  'Accept': 'application/json',
+  'Content-Type': 'application/json'
+}
+
 export const apiGetRequest = async (apiUrl, header=defaultHeader) => {
   const response = await fetch(apiUrl, {
     headers: header

@@ -1,8 +1,26 @@
 import { html, render } from 'lit-html';
 import { api } from './resources/api-service.js';
 import { observableList } from './resources/observableList';
-import { getValidTags } from './resources/api_request_helpers.js';
 import './subtag-item.js';
+
+async function getValidTags(activeTopics) {
+  const subtagsSource = await api.getSource('entries');
+  const res = await subtagsSource.query([
+    {$unwind: "$topics"},
+    {$project: {
+      topic: "$topics",
+      tags: "$tags",
+      selected: {$in: [
+        "$topics",
+        activeTopics
+      ]}}
+    },
+    {$match: {selected: true}},
+    {$unwind: "$tags"},
+    {$group: {_id: "$tags"}}
+  ]);
+  return res.map((t)=>t._id);
+}
 
 const style = html`
 <style>
@@ -34,30 +52,6 @@ const style = html`
   }
 </style>
 `;
-
-export async function getValidTags(activeTopics) {
-  const subtagsSource = await api.getSource('entries');
-  const res = await subtagsSource.query([
-    {$unwind: "$topics"},
-    {$project: {
-      topic: "$topics",
-      tags: "$tags",
-      selected: {$in: [
-        "$topics",
-        activeTopics
-      ]}}
-    },
-    {$match: {selected: true}},
-    {$unwind: "$tags"},
-    {$group: {_id: "$tags"}}
-  ]);
-  return res.map((t)=>t._id);
-}
-
-const defaultHeader = {
-  'Accept': 'application/json',
-  'Content-Type': 'application/json'
-}
 
 class SubtagsList extends HTMLElement {
   get activeTopics() {
