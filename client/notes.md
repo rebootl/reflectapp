@@ -1,36 +1,21 @@
 ## ToDo
 
+* add entries (on prod.):
+  - code examples
+  - fotos
 * jwt renewal?
 * images own source?
 * images access private protected by hash?
 * check if online?
-
-### Bugs / code cleanup
-
-* image dir must be docker volume!!
-* projectdata not loading on ffox mobile -> transpile maybe?
-* cleanup/remove old request functions
-* improve client filestructure (make subdirectories for components)
-* cleanups
-  - cleanup console logs, more cleanups?
-  - cleanup function naming (camelCase)
-  - use connectedCallback for all elements
-* re-login necessary after server update,
-  otherwise new entries/edits not shown => CONFIRM
-* detection trigger not 100% reliable, i think if the detection takes
-  longer than the input it will not re-trigger after input is finished,
-  tho it's probably not too terrible cause links will be pasted most of
-  the time...
-* make "input-overlay" it's own component
-* router
-  - don't update from router if url doesn't effectively changed
-  - update url inside router
+* image upload "TypeError: NetworkError when attempting to fetch resource."
+  when server offline
 
 ### Features
 
 * add images => WIP
-  - images removal, auto-edit text
-  - display images in "uploadbuffer" (filenames)
+  - images removal, auto-edit text => DONE
+  - improve/adapt upload, display images in "uploadbuffer" (filenames)
+
 * syntax highlighting
 * back button for single entry view
 * pagination
@@ -49,6 +34,24 @@
 * check script/view for duplicate id's, broken links
 * encrypt private entries
 
+### Bugs / code cleanup
+
+* projectdata not loading on ffox mobile -> transpile maybe?
+* cleanup/remove old request functions
+* improve client filestructure (make subdirectories for components)
+* cleanups
+  - cleanup console logs, more cleanups?
+  - cleanup function naming (camelCase)
+  - use connectedCallback for all elements
+* detection trigger not 100% reliable, i think if the detection takes
+  longer than the input it will not re-trigger after input is finished,
+  tho it's probably not too terrible cause links will be pasted most of
+  the time...
+* make "input-overlay" it's own component
+* router
+  - don't update from router if url doesn't effectively changed
+  - update url inside router
+
 ### Design/UI/UX adaptions/improvements
 
 * add favicon
@@ -59,10 +62,12 @@
 
 ### Test in production LUL
 
-
+* re-login necessary after server update,
+  otherwise new entries/edits not shown => CONFIRM, didn't happen again..
 
 ### Done
 
+* image dir must be docker volume => DONE
 * storing entry when unchanged results in empty text => DONE
 * tag after creation not active, can lead to accidental deletion
   when saving again => FIXED

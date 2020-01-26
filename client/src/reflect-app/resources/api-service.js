@@ -1,7 +1,7 @@
 import { API } from 'projectData-client';
 import { setApi } from 'projectData-client/dist/Inspector.js';
 //import faker from 'faker'; // used for example data creation
-import { getAuthHeaderAPI } from './auth.js';
+import { getAuthHeader } from './auth.js';
 
 // request/server urls
 export const loginUrl = '/api/login';
@@ -11,7 +11,7 @@ export const uploadImageUrl = '/api/uploadImage';
 // api
 export const api = new API(
   window.location.origin.toString() + '/api/',
-  getAuthHeaderAPI()
+  getAuthHeader()
 );
 // set api for inspector
 setApi(api);

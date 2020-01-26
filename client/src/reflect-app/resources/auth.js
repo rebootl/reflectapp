@@ -10,7 +10,7 @@ export function getUsername() {
   return localStorage.getItem('username');
 }
 
-export function getAuthHeader() {
+export function getAuthHeaderJSON() {
   if (loggedIn()) return {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -19,8 +19,7 @@ export function getAuthHeader() {
   return {};
 }
 
-// (used by the projectData API api-service.js
-export function getAuthHeaderAPI() {
+export function getAuthHeader() {
   if (loggedIn())
     return {
       'Authorization':  'Bearer ' + localStorage.getItem('access_token')

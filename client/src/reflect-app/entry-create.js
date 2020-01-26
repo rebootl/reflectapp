@@ -2,6 +2,8 @@ import { html, render } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
 import { api } from './resources/api-service.js';
 import { digestMessage, getPrefix } from './resources/helpers.js';
+import { uploadFile } from './resources/api_request_helpers.js';
+import { uploadImageUrl } from './resources/api-service.js';
 import './topics-list.js';
 import './subtags-list.js';
 import './entry-input.js';
@@ -107,11 +109,10 @@ class EntryCreate extends HTMLElement {
     this.update();
   }
   async add_entry(_private) {
-    // not really necessary anymore..
+    // -> not really necessary anymore
     if (!this.valid) {
       return;
     }
-    //this.update();
     const db = await api.getSource('entries');
     const date = new Date();
     // remove duplicates
@@ -119,6 +120,23 @@ class EntryCreate extends HTMLElement {
       !this.activeTopics.includes(t));
     const newTags = this.newTags.filter((t) =>
       !this.activeTags.includes(t));
+    // prepare images
+    if (this.entry.images) {
+      for (const image of this.entry.images) {
+        // -> if not "keep local" upload
+        // -> upload
+        const res = await uploadFile(uploadImageUrl, image.file, image.filename);
+        console.log(res);
+        if (res.success) {
+          image.uploaded = true;
+          image.filepath = res.filepath;
+        }
+        // -> if not success store local
+        delete image.file;
+        console.log("image", image);
+      }
+    }
+    //console.log("entry", this.entry);
     let entry = {
       ...this.entry,
       date: date,

@@ -2,8 +2,8 @@ import { html, render } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
 import Compressor from 'compressorjs';
 import { apiGetRequest } from './resources/api_request_helpers.js';
-import { url_info_url } from './resources/api-service.js';
-import { get_auth_header } from './resources/auth.js';
+import { urlInfoUrl } from './resources/api-service.js';
+import { getAuthHeaderJSON } from './resources/auth.js';
 import './gen-elements/textarea-input.js';
 import './gen-elements/text-input.js';
 import './gen-elements/tag-small.js';
@@ -20,9 +20,14 @@ const style = html`
     textarea-input {
       height: 25px;
     }*/
+    #inputArea {
+      display: flex;
+      flex-wrap: wrap;
+    }
     upload-button {
       margin-top: 7px;
       margin-left: 5px;
+      margin-bottom: 15px;
     }
     #typeDetectionBox {
       /*display: block;*/
@@ -44,6 +49,21 @@ const style = html`
     #comment.active {
       display: block;
     }
+    #imageUploadBox {
+      margin-top: 7px;
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .previewBox {
+      width: 100px;
+      overflow-wrap: break-word;
+    }
+    .previewBox small {
+      font-size: 0.8em;
+    }
+    .newImagePreview {
+      width: 50px;
+    }
   </style>
 `;
 
@@ -61,24 +81,30 @@ function throttle(func, delay=1000) {
   }
 }
 
-const prepareImage = (file, maxWidth=1920, maxHeight=1920) => {
+const compressImage = (file, maxWidth=1920, maxHeight=1920) => {
   return new Promise((res, rej) => {
     new Compressor(file, {
       maxWidth,
       maxHeight,
       success(result) {
-        // base64encode result
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          res(reader.result);
-        }
-        reader.readAsDataURL(result);
+        res(result);
       },
       error(err) {
         rej(err);
       }
     });
-  })
+  });
+};
+
+// base64 encode data
+const encodeData = (file) => {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      res(reader.result);
+    }
+    reader.readAsDataURL(file);
+  });
 };
 
 class EntryInput extends HTMLElement {
@@ -136,6 +162,7 @@ class EntryInput extends HTMLElement {
     this.attachShadow({mode: 'open'});
   }
   connectedCallback() {
+    this.newImages = [];
     this.update();
     //this.detectThrottled = throttle((v)=>{this.detect(v)}, 1000);
     /*
@@ -147,8 +174,8 @@ class EntryInput extends HTMLElement {
   }
   async setUrlInfo(url) {
     await apiGetRequest(
-      url_info_url + '?url=' + encodeURIComponent(url),
-      get_auth_header()
+      urlInfoUrl + '?url=' + encodeURIComponent(url),
+      getAuthHeaderJSON()
     )
       .then(data => {
         // shorten the content type string from utf-iso-blabla stuff..
@@ -222,8 +249,19 @@ class EntryInput extends HTMLElement {
     this.shadowRoot.querySelector('textarea-input').loadText(text);
     //this.triggerDetect(text);
   }
-  async imageUpload(files) {
-    let newImages = [];
+  async loadImage(files) {
+    // optimize into
+    /*
+    const newImages = await Promise.all(files.map(async (file)=>({
+      placeholder: placeholder,
+      filename: file.name,
+      osize: file.osize,
+      type: file.type,
+      lastModified: file.lastModified,
+      previewData: await compress(file, 240, 160),
+      imageData: await compress(file),
+    })));
+    */
     for (const file of files) {
       // check
       if (!file.type.startsWith('image/')) continue;
@@ -239,40 +277,31 @@ class EntryInput extends HTMLElement {
       textareaInputElement.value = inputText;
 
       // prepare image object
-
-      // optimize into
-      /*
-      const newImages = await Promise.all(files.map(async (file)=>({
+      const previewImageBlob = await compressImage(file, 240, 240);
+      const previewImageData = await encodeData(previewImageBlob);
+      const image = {
         placeholder: placeholder,
         filename: file.name,
-        osize: file.osize,
+        osize: file.size,
         type: file.type,
         lastModified: file.lastModified,
-        previewData: await compress(file, 240, 160),
-        imageData: await compress(file),
-      })));
-      */
-
-      let image = {
-        placeholder: placeholder,
-        filename: file.name,
-        osize: file.osize,
-        type: file.type,
-        lastModified: file.lastModified,
-        previewData: await prepareImage(file, 240, 240),
-        imageData: await prepareImage(file),
+        previewData: previewImageData,
+        file: file,
         uploaded: false
       };
-      newImages.push(image);
+      console.log(image);
+      this.newImages.push(image);
     }
     this.result = {
       ...this.result,
-      images: newImages
+      images: this.newImages
     };
+    this.update();
   }
   reset() {
     this.shadowRoot.querySelector('#entry-text').reset();
     this.shadowRoot.querySelector('#comment').reset();
+    this.newImages = [];
     this.status = 'initial';
     this.result = {};
   }
@@ -314,12 +343,22 @@ class EntryInput extends HTMLElement {
       loadcomment = this.oldEntry.comment;
     }
     render(html`${style}
-      <textarea-input id="entry-text" rows=${this.rows} cols=${this.cols}
-                  @input=${(e)=>this.triggerDetect(e.target.value)}
-                  placeholder=${this.placeholder}
-                  loadtext=${loadtext}></textarea-input>
-      <upload-button
-        @change=${(e)=>this.imageUpload(e.detail)}>Image(s)...</upload-button>
+      <div id="inputArea">
+        <textarea-input id="entry-text" rows=${this.rows} cols=${this.cols}
+                    @input=${(e)=>this.triggerDetect(e.target.value)}
+                    placeholder=${this.placeholder}
+                    loadtext=${loadtext}></textarea-input>
+        <upload-button
+          @change=${(e)=>this.loadImage(e.detail)}>Image(s)...</upload-button>
+        <div id="imageUploadBox">
+          ${ this.newImages.map((i) => html`
+            <div class="previewBox">
+              <img class="newImagePreview" src="${i.previewData}" />
+              <small>${i.filename}</small>
+              <!--<labelled-button><small>Keep local</small></labelled-button>-->
+            </div>`) }
+        </div>
+      </div>
       <div id="typeDetectionBox">
         <small id="typeDetection">Type: </small>${this.getTypeDetect()}
       </div>

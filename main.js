@@ -1,7 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import compression from 'compression';
-//import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -10,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import request from 'request'; // for url info request
 import cheerio from 'cheerio'; // html parsing
+import multer from 'multer'; // multipart form upload (used for images)
 import Endpoint from 'projectData/dist/Endpoint';
 import { CustomQuery } from 'projectData/dist/Misc/Custom';
 import { port, secret, user } from './config.js';
@@ -20,7 +20,8 @@ const staticDir = 'client/dist';
 // (mediaDir is below staticDir)
 const mediaDir = 'media';
 
-// app
+// setup app
+
 const app = express();
 
 app.use(bodyParser.json({limit: '10mb', extended: true}));
@@ -29,70 +30,11 @@ app.use(expressJwt({
   secret: secret,
   credentialsRequired: false
 }));
-//}).unless({path: ['/api/login', '/api/entries', '/']}));
-// ^^^ got a "X-Content-Type-Options" error :(
-// cors not needed anymore
-/*app.use(cors({
-  origin: function(origin, callback){callback(null, true)},
-  credentials: true
-}));*/
 
-// serve the client static
+// static files (incl. client)
 app.use('/', express.static(staticDir,));
 
-// login / jwt stuff
-
-function createToken() {
-  // sign with default (HMAC SHA256)
-  //let expirationDate =  Math.floor(Date.now() / 1000) + 30 //30 seconds from now
-  var token = jwt.sign({ user: user.name }, secret);
-  return token;
-}
-
-app.post('/api/login', (req, res) => {
-  if (req.body.username !== user.name) {
-    res.sendStatus(401);
-    return;
-  }
-  bcrypt.compare(req.body.password, user.pwhash).then((check) => {
-    if (check) {
-      console.log("login ok");
-      res.send({ token: createToken() });
-    } else {
-      console.log("login failed");
-      res.sendStatus(401);
-    }
-  });
-});
-
-app.get('/api/urlinfo', (req, res) => {
-  // tried to protect route lead to 404..
-  //expressJwt({secret: secret}),
-  //(err, req, res, next) => {
-  //if (err.name === 'UnauthorizedError') { res.sendStatus(401); return; }
-  const url = req.query.url;
-  console.log("url request: ", url);
-  request(url, (error, response, body) => {
-    if (error) {
-      // (debug info)
-      //console.log('error:', error);
-      res.send({
-        success: false,
-        errorMessage: error.code
-      });
-      return;
-    }
-    const contentType = response.headers['content-type'];
-    const c = cheerio.load(response.body);
-    const title = c('title').text();
-    res.send({
-      success: true,
-      contentType: contentType,
-      statusCode: response.statusCode,
-      title: title
-    });
-  });
-});
+// persistent storage
 
 // load data
 let data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
@@ -103,35 +45,31 @@ const writeData = () => {
   fs.writeFileSync(dataFile, str);
 };
 
-function storeImage(image) {
-  if (image.uploaded) return image;
-  // convert imageData to image file data
-  const data = image.imageData.split(';base64,')[1];
-  // create filepath
-  const randomDirName = crypto.randomBytes(20).toString('hex');
-  const imagepath = path.join(staticDir, mediaDir, randomDirName);
-  const filepath = path.join(imagepath, image.filename);
-  fs.mkdir(imagepath, {recursive: true}, (err) => {
-    if (err) console.log('error creating path:', err);
-    // store image
-    fs.writeFile(filepath, data, {encoding: 'base64'}, (err) => {
-      if (err) console.log('error storing image:', err);
-      console.log('stored image:', image.filename);
+// setup image storage
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const randomDirName = crypto.randomBytes(20).toString('hex');
+    const imagepath = path.join(staticDir, mediaDir, randomDirName);
+    fs.mkdir(imagepath, {recursive: true}, (err) => {
+      if (err) console.log('error creating path:', err);
+      cb(null, imagepath);
     });
-  });
-  // update image object
-  // -> return inside writeFile?
-  return {
-    ...image,
-    uploaded: true,
-    filepath: path.join(mediaDir, randomDirName, image.filename),
-    imageData: "",
-  };
-}
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  }
+});
+// -> setup image filter (check for image)
+
+const upload = multer({ storage: storage });
 
 function deleteImage(image) {
   if (!image.uploaded) return image;
-  console.log(image.filepath);
+  if (!image.filepath) {
+    console.log("image has no filepath argument, returning");
+    return image;
+  }
   const filepath = path.join(staticDir, image.filepath);
   fs.unlink(filepath, (err) => {
     if (err) console.log('error deleting image:', err);
@@ -154,13 +92,73 @@ function handleUpdateImages(newImages, oldImages) {
       }
     }
   }
-  // store all the new images, check if already uploaded is in storeImage func.
-  const images = [];
-  for (const image of newImages) {
-    images.push(storeImage(image));
-  }
-  return images;
 }
+
+// login / jwt stuff
+
+function createToken() {
+  // sign with default (HMAC SHA256)
+  //let expirationDate =  Math.floor(Date.now() / 1000) + 30 //30 seconds from now
+  var token = jwt.sign({ user: user.name }, secret);
+  return token;
+}
+
+// routes
+
+app.post('/api/login', (req, res) => {
+  if (req.body.username !== user.name) {
+    res.sendStatus(401);
+    return;
+  }
+  bcrypt.compare(req.body.password, user.pwhash).then((check) => {
+    if (check) {
+      console.log("login ok");
+      res.send({
+        success: true,
+        token: createToken()
+      });
+    } else {
+      console.log("login failed");
+      res.sendStatus(401);
+    }
+  });
+});
+
+app.get('/api/urlinfo', (req, res) => {
+  if (!req.user) res.sendStatus(401);
+  const url = req.query.url;
+  console.log("url request: ", url);
+  request(url, (error, response, body) => {
+    if (error) {
+      res.send({
+        success: false,
+        errorMessage: error.code
+      });
+      return;
+    }
+    const contentType = response.headers['content-type'];
+    const c = cheerio.load(response.body);
+    const title = c('title').text();
+    res.send({
+      success: true,
+      contentType: contentType,
+      statusCode: response.statusCode,
+      title: title
+    });
+  });
+});
+
+app.post('/api/uploadImage', upload.single('data'), (req, res) => {
+  if (!req.user) res.sendStatus(401);
+  const path = req.file.path.replace(staticDir, '');
+  console.log('store image:', path);
+  res.send({
+    success: true,
+    filepath: path,
+  });
+});
+
+// projectData endpoints
 
 new Endpoint(app.route('/api/entries'), {
   query: new CustomQuery({ update: ()=>data }),
@@ -175,14 +173,7 @@ new Endpoint(app.route('/api/entries'), {
   add: async (obj, req) => {
     console.log("add entry user: ", req.user);
     if (!req.user) return;
-    const images = [];
-    for (const image of obj.images) {
-      images.push(storeImage(image));
-    }
-    data.push({
-      ...obj,
-      images: images,
-    });
+    data.push(obj);
     writeData();
   },
   delete: async (obj, req) => {
@@ -201,12 +192,9 @@ new Endpoint(app.route('/api/entries'), {
     // handle images
     if (!newObj.images) newObj.images = [];
     if (!oldObj.images) oldObj.images = [];
-    const updatedImages = handleUpdateImages(newObj.images, oldObj.images);
-    // update entry and write to file
-    data.push( {
-      ...newObj,
-      images: updatedImages
-    });
+    handleUpdateImages(newObj.images, oldObj.images);
+    // insert new entry
+    data.push(newObj);
     writeData();
   }
 });
