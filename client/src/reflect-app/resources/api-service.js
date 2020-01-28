@@ -1,5 +1,5 @@
-import { API } from 'projectData-client';
-import { setApi } from 'projectData-client/dist/Inspector.js';
+import { API } from '@lsys/projectData-client';
+import { setApi } from '@lsys/projectData-client/dist/Inspector.js';
 //import faker from 'faker'; // used for example data creation
 import { getAuthHeader } from './auth.js';
 
@@ -15,6 +15,10 @@ export const api = new API(
 );
 // set api for inspector
 setApi(api);
+
+// new stuff
+api.addEventListener('error', console.log);
+api.addEventListener('warn', console.log);
 
 // create client side example data
 /*
