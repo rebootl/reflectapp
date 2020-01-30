@@ -9,6 +9,7 @@
     "start": "node --experimental-modules --es-module-specifier-resolution=node ./main.js"
   },
   "dependencies": {
+    "@lsys/projectData": "git+https://git.lsys.ac/luca/projectData.git",
     "bcrypt": "^3.0.7",
     "body-parser": "^1.19.0",
     "cheerio": "^1.0.0-rc.3",
@@ -19,7 +20,6 @@
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
     "multer": "^1.4.2",
-    "projectData": "git+https://git.lsys.ac/luca/projectData.git",
     "request": "^2.88.0"
   },
   "devDependencies": {}

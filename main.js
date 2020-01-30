@@ -10,8 +10,8 @@ import bcrypt from 'bcrypt';
 import request from 'request'; // for url info request
 import cheerio from 'cheerio'; // html parsing
 import multer from 'multer'; // multipart form upload (used for images)
-import Endpoint from 'projectData/dist/Endpoint';
-import { CustomQuery } from 'projectData/dist/Misc/Custom';
+import Endpoint from '@lsys/projectData/dist/Endpoint';
+import { CustomQuery } from '@lsys/projectData/dist/Misc/Custom';
 import { port, secret, user } from './config.js';
 
 // files/paths
