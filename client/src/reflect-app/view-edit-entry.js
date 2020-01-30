@@ -1,5 +1,7 @@
 import { html, render } from 'lit-html';
 import { api } from './resources/api-service.js';
+import { uploadFile } from './resources/api_request_helpers.js';
+import { uploadImageUrl } from './resources/api-service.js';
 import './entry-header.js';
 import './entry-item.js';
 import './gen-elements/labelled-checkbox.js';
@@ -141,8 +143,20 @@ class ViewEditEntry extends HTMLElement {
     const currentImageFilenames = this.currentImages.map((i)=>i.filename);
     if (result.images) {
       for (const image of result.images) {
-        if (!currentImageFilenames.includes(image.filename))
+        if (!currentImageFilenames.includes(image.filename)) {
+          // -> if not "keep local" upload
+          // -> upload
+          const res = await uploadFile(uploadImageUrl, image.file, image.filename);
+          //console.log(res);
+          if (res.success) {
+            image.uploaded = true;
+            image.filepath = res.filepath;
+          }
+          // -> if not success store local
+          delete image.file;
+          //console.log("image", image);
           this.currentImages.push(image);
+        }
       }
     }
     const imagesToRemove = this.currentImages.filter((i)=>i.remove);

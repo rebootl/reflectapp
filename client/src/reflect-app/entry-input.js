@@ -289,7 +289,7 @@ class EntryInput extends HTMLElement {
         file: file,
         uploaded: false
       };
-      console.log(image);
+      //console.log(image);
       this.newImages.push(image);
     }
     this.result = {
@@ -345,11 +345,12 @@ class EntryInput extends HTMLElement {
     render(html`${style}
       <div id="inputArea">
         <textarea-input id="entry-text" rows=${this.rows} cols=${this.cols}
-                    @input=${(e)=>this.triggerDetect(e.target.value)}
-                    placeholder=${this.placeholder}
-                    loadtext=${loadtext}></textarea-input>
-        <upload-button
-          @change=${(e)=>this.loadImage(e.detail)}>Image(s)...</upload-button>
+                        @input=${(e)=>this.triggerDetect(e.target.value)}
+                        placeholder=${this.placeholder}
+                        loadtext=${loadtext}>
+        </textarea-input>
+        <upload-button @change=${(e)=>this.loadImage(e.detail)}>Image(s)...
+        </upload-button>
         <div id="imageUploadBox">
           ${ this.newImages.map((i) => html`
             <div class="previewBox">

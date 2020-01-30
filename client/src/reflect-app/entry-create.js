@@ -4,10 +4,22 @@ import { api } from './resources/api-service.js';
 import { digestMessage, getPrefix } from './resources/helpers.js';
 import { uploadFile } from './resources/api_request_helpers.js';
 import { uploadImageUrl } from './resources/api-service.js';
-import './topics-list.js';
-import './subtags-list.js';
-import './entry-input.js';
-import './add-items.js';
+import './selection-box.js';
+
+export async function uploadImage(image) {
+  // -> if not "keep local" upload
+  // -> upload
+  const res = await uploadFile(uploadImageUrl, image.file, image.filename);
+  //console.log(res);
+  if (res.success) {
+    image.uploaded = true;
+    image.filepath = res.filepath;
+  }
+  // -> if not success store local
+  delete image.file;
+  //console.log("image", image);
+  return image;
+}
 
 const style = html`
   <style>
@@ -17,19 +29,11 @@ const style = html`
       position: relative;
       color: var(--light-text-med-emph);
     }
-    #input-box {
-      display: flex;
-    }
-    #input-overlay {
-      background-color: var(--surface);
-      margin-bottom: 10px;
-      border-radius: 5px;
-      overflow: hidden;
+    selection-box {
       display: none;
     }
-    #input-overlay.active {
+    selection-box.active {
       display: block;
-      margin-bottom: 10px;
     }
     #buttonsBox {
       display: none;
@@ -42,43 +46,15 @@ const style = html`
     labelled-button {
       margin-right: 5px;
     }
-    #add-topics {
-      padding-bottom: 5px;
-    }
-    #add-tags {
-      border-top: 1px solid var(--on-surface-line);
-    }
   </style>
 `;
 
 class EntryCreate extends HTMLElement {
-  get activeTopics() {
-    return this._activeTopics || [];
+  get selectionResult() {
+    return this._selectionResult || {};
   }
-  set activeTopics(v) {
-    this._activeTopics = v;
-    if (v.length < 1) this.activeTags = [];
-    this.update();
-  }
-  get activeTags() {
-    return this._activeTags || [];
-  }
-  set activeTags(v) {
-    this._activeTags = v;
-    this.update();
-  }
-  get newTopics() {
-    return this._newTopics || [];
-  }
-  set newTopics(v) {
-    this._newTopics = v;
-    this.update();
-  }
-  get newTags() {
-    return this._newTags || [];
-  }
-  set newTags(v) {
-    this._newTags = v;
+  set selectionResult(v) {
+    this._selectionResult = v;
     this.update();
   }
   get entry() {
@@ -96,10 +72,9 @@ class EntryCreate extends HTMLElement {
     this.update();
   }
   get valid() {
-    if ((this.activeTopics.length < 1 && this.newTopics.length < 1) ||
-      !this.inputReady)
-      return false;
-    return true;
+    if (this.selectionResult.ready && this.inputReady)
+      return true;
+    return false;
   }
   constructor() {
     super();
@@ -115,33 +90,28 @@ class EntryCreate extends HTMLElement {
     }
     const db = await api.getSource('entries');
     const date = new Date();
-    // remove duplicates
-    const newTopics = this.newTopics.filter((t) =>
-      !this.activeTopics.includes(t));
-    const newTags = this.newTags.filter((t) =>
-      !this.activeTags.includes(t));
     // prepare images
     if (this.entry.images) {
       for (const image of this.entry.images) {
         // -> if not "keep local" upload
         // -> upload
         const res = await uploadFile(uploadImageUrl, image.file, image.filename);
-        console.log(res);
+        //console.log(res);
         if (res.success) {
           image.uploaded = true;
           image.filepath = res.filepath;
         }
         // -> if not success store local
         delete image.file;
-        console.log("image", image);
+        //console.log("image", image);
       }
     }
     //console.log("entry", this.entry);
     let entry = {
       ...this.entry,
       date: date,
-      topics: [ ...this.activeTopics, ...newTopics ],
-      tags: [ ...this.activeTags, ...newTags ],
+      topics: this.selectionResult.topics,
+      tags: this.selectionResult.tags,
       private: _private,
       pinned: false
     };
@@ -165,36 +135,29 @@ class EntryCreate extends HTMLElement {
   }
   reset() {
     this.shadowRoot.querySelector('entry-input').reset();
-    this.shadowRoot.querySelector('#add-topics').reset();
-    this.shadowRoot.querySelector('topics-list').reset();
-    this.shadowRoot.querySelector('#add-tags').reset();
-    this.shadowRoot.querySelector('subtags-list').reset();
+    this.shadowRoot.querySelector('selection-box').reset();
   }
   update() {
-    const buttonBoxClasses = { active: this.valid };
     const selectionClasses = { active: this.inputReady };
+    const buttonBoxClasses = { active: this.valid };
     render(html`${style}
-      <div id="input-box">
-        <entry-input @ready=${(e)=>{this.inputReady = e.detail}}
-          @inputchange=${(e)=>{this.entry = e.detail}}></entry-input>
-      </div>
-      <div id="input-overlay" class=${classMap(selectionClasses)}>
-        <add-items id="add-topics" label="New Topic..."
-          @itemschanged=${(e)=>{this.newTopics = e.detail}}></add-items>
-        <topics-list .activeTopics=${this.activeTopics}
-          @selectionchanged=${(e)=>{this.activeTopics = e.detail}}>
-        </topics-list>
-        <add-items id="add-tags" label="New Tag..."
-          @itemschanged=${(e)=>{this.newTags = e.detail}}></add-items>
-        <subtags-list .activeTopics=${this.activeTopics} .activeSubtags=${this.activeTags}
-          @selectionchanged=${(e)=>{this.activeTags = e.detail}}>
-        </subtags-list>
-      </div>
+      <entry-input @ready=${(e)=>{this.inputReady = e.detail}}
+                     @inputchange=${(e)=>{this.entry = e.detail}}>
+      </entry-input>
+      <selection-box class=${classMap(selectionClasses)}
+                     @selectionchanged=${(e)=>this.selectionResult = e.detail}>
+      </selection-box>
       <div id="buttonsBox" class=${classMap(buttonBoxClasses)}>
-        <labelled-button class="inline" ?disabledstyle=${!this.valid}
-          @click=${()=>this.add_entry(false)} label="Create"></labelled-button>
-        <labelled-button class="inline" ?disabledstyle=${!this.valid}
-          @click=${()=>this.add_entry(true)} label="Create Private"></labelled-button>
+        <labelled-button class="inline"
+                         ?disabledstyle=${!this.valid}
+                         @click=${()=>this.add_entry(false)}
+                         label="Create">
+        </labelled-button>
+        <labelled-button class="inline"
+                         ?disabledstyle=${!this.valid}
+                         @click=${()=>this.add_entry(true)}
+                         label="Create Private">
+        </labelled-button>
       </div>
       `, this.shadowRoot);
   }

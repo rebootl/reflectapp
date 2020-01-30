@@ -10,6 +10,10 @@
 * image upload "TypeError: NetworkError when attempting to fetch resource."
   when server offline
 
+* service
+  (image) -> id
+  (id) -> status of the id
+
 ### Features
 
 * add images => WIP
@@ -54,6 +58,7 @@
 
 ### Design/UI/UX adaptions/improvements
 
+* collapse entries
 * add favicon
 * rework CSS
 * accessibility: topics-list not using keyboard tabs
