@@ -26,17 +26,24 @@ const style = html`
 
 class SelectionBox extends HTMLElement {
   get activeTopics() {
-    return this._activeTopics || [];
+    if (this._activeTopics) return this._activeTopics;
+    if (this.loaditems) return this.loaditems.topics || [];
+    return [];
   }
   set activeTopics(v) {
+    // attention: comparing stringify doesn't work here!!
+    // v and this._activeTopics same !!
     this._activeTopics = v;
     if (v.length < 1) this.activeTags = [];
     this.selectionChanged();
   }
   get activeTags() {
-    return this._activeTags || [];
+    if (this._activeTags) return this._activeTags;
+    if (this.loaditems) return this.loaditems.tags || [];
+    return [];
   }
   set activeTags(v) {
+    if (JSON.stringify(v) === JSON.stringify(this._activeTags)) return;
     this._activeTags = v;
     this.selectionChanged();
   }
@@ -59,6 +66,15 @@ class SelectionBox extends HTMLElement {
       return true;
     return false;
   }
+  get selectionResult() {
+    const newTopics = this.newTopics.filter((t)=>!this.activeTopics.includes(t));
+    const newTags = this.newTags.filter((t)=>!this.activeTags.includes(t));
+    return {
+      topics: [ ...this.activeTopics, ...newTopics ],
+      tags: [ ...this.activeTags, ...newTags],
+      ready: this.ready,
+    };
+  }
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
@@ -67,23 +83,25 @@ class SelectionBox extends HTMLElement {
     this.update();
   }
   selectionChanged() {
-    const newTopics = this.newTopics.filter((t) =>
-      !this.activeTopics.includes(t));
-    const newTags = this.newTags.filter((t) =>
-      !this.activeTags.includes(t));
-    const result = {
-      topics: [ ...this.activeTopics, ...newTopics ],
-      tags: [ ...this.activeTags, ...newTags],
-      ready: this.ready,
-    }
-    this.dispatchEvent(new CustomEvent('selectionchanged', {detail: result}));
+    this.dispatchEvent(new CustomEvent('selectionchanged', {
+      detail: this.selectionResult
+    }));
     this.update();
   }
   reset() {
-    this.shadowRoot.querySelector('#add-topics').reset();
+    this.activeTopics = [];
+    this.activeTags = [];
+    this.newTopics = [];
+    this.newTags = [];
     this.shadowRoot.querySelector('topics-list').reset();
-    this.shadowRoot.querySelector('#add-tags').reset();
     this.shadowRoot.querySelector('subtags-list').reset();
+  }
+  updateNewItems() {
+    this.activeTopics = [ ...this.activeTopics, ...this.newTopics ];
+    this.activeTags = [ ...this.activeTags, ...this.newTags ];
+    this.shadowRoot.querySelector('#add-topics').reset();
+    this.shadowRoot.querySelector('#add-tags').reset();
+    this.update();
   }
   update() {
     render(html`${style}

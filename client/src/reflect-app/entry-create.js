@@ -136,13 +136,14 @@ class EntryCreate extends HTMLElement {
   reset() {
     this.shadowRoot.querySelector('entry-input').reset();
     this.shadowRoot.querySelector('selection-box').reset();
+    this.shadowRoot.querySelector('selection-box').updateNewItems();
   }
   update() {
     const selectionClasses = { active: this.inputReady };
     const buttonBoxClasses = { active: this.valid };
     render(html`${style}
       <entry-input @ready=${(e)=>{this.inputReady = e.detail}}
-                     @inputchange=${(e)=>{this.entry = e.detail}}>
+                   @inputchange=${(e)=>{this.entry = e.detail}}>
       </entry-input>
       <selection-box class=${classMap(selectionClasses)}
                      @selectionchanged=${(e)=>this.selectionResult = e.detail}>

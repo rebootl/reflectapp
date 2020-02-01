@@ -60,7 +60,7 @@ class SubtagsList extends HTMLElement {
   set activeTopics(v) {
     this._activeTopics = v;
     this.updateTagsFromTopics(v);
-    //if (this.observableSubtags) this.update_query();
+    if (this.observableSubtags) this.update_query();
   }
   get activeSubtags() {
     return this._activeSubtags || [];
@@ -111,7 +111,7 @@ class SubtagsList extends HTMLElement {
     const oldTags = this.activeSubtags;
     this.activeSubtags = this.activeSubtags.filter(t=>validTags.includes(t));
     if (oldTags.length != this.activeSubtags.length) {
-      this.selectionchanged();
+      this.selectionChanged();
     }
   }
   toggleSubtag(name) {
@@ -120,14 +120,13 @@ class SubtagsList extends HTMLElement {
     } else {
       this.activeSubtags.push(name);
     }
-    this.selectionchanged();
-    //this.update_url();
+    this.selectionChanged();
   }
   reset() {
     this.activeSubtags = [];
-    this.selectionchanged();
+    this.selectionChanged();
   }
-  selectionchanged() {
+  selectionChanged() {
     this.dispatchEvent(new CustomEvent('selectionchanged',
       {detail: this.activeSubtags}));
   }
