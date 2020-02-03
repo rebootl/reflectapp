@@ -36,6 +36,8 @@ const style = html`
     }
     #linkbox {
       display: inline-block;
+      max-width: 575px;
+      overflow: hidden;
       border: 1px solid var(--on-background-border);
       border-radius: 4px;
       padding: 10px 15px 10px 15px;
