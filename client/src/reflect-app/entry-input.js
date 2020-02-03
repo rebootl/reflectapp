@@ -1,13 +1,20 @@
 import { html, render } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
-import Compressor from 'compressorjs';
 import { apiGetRequest } from './resources/api_request_helpers.js';
 import { urlInfoUrl } from './resources/api-service.js';
 import { getAuthHeaderJSON } from './resources/auth.js';
 import './gen-elements/textarea-input.js';
+import './upload-images.js';
 import './gen-elements/text-input.js';
 import './gen-elements/tag-small.js';
 import './gen-elements/upload-button.js';
+
+// smartly insert s into text
+function insertString(text, s) {
+  let prefix = "";
+  if (text !== "" && text.slice(-1) !== '\n') prefix = '\n';
+  return text += prefix + s + '\n';
+}
 
 const style = html`
   <style>
@@ -24,14 +31,16 @@ const style = html`
       display: flex;
       flex-wrap: wrap;
     }
-    upload-button {
+    textarea-input {
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    upload-images {
       margin-top: 7px;
-      margin-left: 5px;
-      margin-bottom: 15px;
     }
     #typeDetectionBox {
       /*display: block;*/
-      padding: 10px 0 10px 10px;
+      padding: 0 0 10px 10px;
       color: var(--light-text-low-emph);
     }
     tag-small {
@@ -49,21 +58,6 @@ const style = html`
     #comment.active {
       display: block;
     }
-    #imageUploadBox {
-      margin-top: 7px;
-      display: flex;
-      flex-wrap: wrap;
-    }
-    .previewBox {
-      width: 100px;
-      overflow-wrap: break-word;
-    }
-    .previewBox small {
-      font-size: 0.8em;
-    }
-    .newImagePreview {
-      width: 50px;
-    }
   </style>
 `;
 
@@ -80,32 +74,6 @@ function throttle(func, delay=1000) {
     }
   }
 }
-
-const compressImage = (file, maxWidth=1920, maxHeight=1920) => {
-  return new Promise((res, rej) => {
-    new Compressor(file, {
-      maxWidth,
-      maxHeight,
-      success(result) {
-        res(result);
-      },
-      error(err) {
-        rej(err);
-      }
-    });
-  });
-};
-
-// base64 encode data
-const encodeData = (file) => {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      res(reader.result);
-    }
-    reader.readAsDataURL(file);
-  });
-};
 
 class EntryInput extends HTMLElement {
   set oldEntry(v) {
@@ -148,6 +116,13 @@ class EntryInput extends HTMLElement {
   get comment() {
     return this._comment || "";
   }
+  /*set images(v) {
+    this._images = v;
+  }
+  get images() {
+    if (this._images) return this._images;
+    if (this.oldEntry) return this.oldEntry.images || [];
+  }*/
   get placeholder() {
     return this.getAttribute('placeholder') || "New Entry...";
   }
@@ -162,7 +137,6 @@ class EntryInput extends HTMLElement {
     this.attachShadow({mode: 'open'});
   }
   connectedCallback() {
-    this.newImages = [];
     this.update();
     //this.detectThrottled = throttle((v)=>{this.detect(v)}, 1000);
     /*
@@ -249,59 +223,36 @@ class EntryInput extends HTMLElement {
     this.shadowRoot.querySelector('textarea-input').loadText(text);
     //this.triggerDetect(text);
   }
-  async loadImage(files) {
-    // optimize into
-    /*
-    const newImages = await Promise.all(files.map(async (file)=>({
-      placeholder: placeholder,
-      filename: file.name,
-      osize: file.osize,
-      type: file.type,
-      lastModified: file.lastModified,
-      previewData: await compress(file, 240, 160),
-      imageData: await compress(file),
-    })));
-    */
-    for (const file of files) {
-      // check
-      if (!file.type.startsWith('image/')) continue;
-      // generate and insert placeholder
-      const placeholder = `<image_placeholder ${file.name}>`;
-      const textareaInputElement = this.shadowRoot.querySelector('textarea-input');
-      const textareaElement = textareaInputElement.shadowRoot.querySelector('textarea');
-      let prefix = "";
-      if (textareaElement.value !== "" && textareaElement.value.slice(-1) !== '\n')
-        prefix = '\n';
-      const inputText = textareaElement.value += prefix + placeholder + '\n';
-      textareaElement.value = inputText;
-      textareaInputElement.value = inputText;
-
-      // prepare image object
-      const previewImageBlob = await compressImage(file, 240, 240);
-      const previewImageData = await encodeData(previewImageBlob);
-      const image = {
-        placeholder: placeholder,
-        filename: file.name,
-        osize: file.size,
-        type: file.type,
-        lastModified: file.lastModified,
-        previewData: previewImageData,
-        file: file,
-        uploaded: false
-      };
-      //console.log(image);
-      this.newImages.push(image);
-    }
-    this.result = {
-      ...this.result,
-      images: this.newImages
-    };
+  addImage(image) {
+    // generate and insert placeholder
+    const textareaInputElement = this.shadowRoot.querySelector('textarea-input');
+    const textareaElement = textareaInputElement.shadowRoot.querySelector('textarea');
+    const newText = insertString(textareaElement.value, image.placeholder);
+    textareaElement.value = newText;
+    textareaInputElement.value = newText;
+    // insert image result
+    // -> query on save / set below / _call store function on save_, too much
+    // info has to be passed up otherwise, the images, newImages, keepLocal etc.
+    //this.newImages = { ...this.newImages, image };
     this.update();
   }
+  removeImage(image) {
+    const textareaInputElement = this.shadowRoot.querySelector('textarea-input');
+    const textareaElement = textareaInputElement.shadowRoot.querySelector('textarea');
+    const newText = textareaElement.value.replace(image.placeholder + '\n', '');
+    textareaElement.value = newText;
+    textareaInputElement.value = newText;
+    this.update()
+  }
+  async storeUploadImages() {
+    return await this.shadowRoot.querySelector('upload-images').storeUploadImages();
+  }
+  /*updateImage(result) {
+    this.result = { ...this.result, newImages: result.newImages };
+  }*/
   reset() {
     this.shadowRoot.querySelector('#entry-text').reset();
     this.shadowRoot.querySelector('#comment').reset();
-    this.newImages = [];
     this.status = 'initial';
     this.result = {};
   }
@@ -349,16 +300,9 @@ class EntryInput extends HTMLElement {
                         placeholder=${this.placeholder}
                         loadtext=${loadtext}>
         </textarea-input>
-        <upload-button @change=${(e)=>this.loadImage(e.detail)}>Image(s)...
-        </upload-button>
-        <div id="imageUploadBox">
-          ${ this.newImages.map((i) => html`
-            <div class="previewBox">
-              <img class="newImagePreview" src="${i.previewData}" />
-              <small>${i.filename}</small>
-              <!--<labelled-button><small>Keep local</small></labelled-button>-->
-            </div>`) }
-        </div>
+        <upload-images @addimage=${(e)=>this.addImage(e.detail)}
+                       @removeimage=${(e)=>this.removeImage(e.detail)}>
+        </upload-images>
       </div>
       <div id="typeDetectionBox">
         <small id="typeDetection">Type: </small>${this.getTypeDetect()}
@@ -369,6 +313,7 @@ class EntryInput extends HTMLElement {
                   loadtext=${loadcomment}></text-input>
       `,
       this.shadowRoot);
+      /* @updateimage=${(e)=>this.updateImage(e.detail)} */
   }
 }
 

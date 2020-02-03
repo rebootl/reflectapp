@@ -10,16 +10,17 @@
 * image upload "TypeError: NetworkError when attempting to fetch resource."
   when server offline
 
-* service
+* service for images
   (image) -> id
   (id) -> status of the id
 
 ### Features
 
-* add images => WIP
+* add images
   - images removal, auto-edit text => DONE
   - improve/adapt upload, display images in "uploadbuffer" (filenames)
-
+* show/hide private entries
+* show synced status (using entry property)
 * syntax highlighting
 * back button for single entry view
 * pagination
@@ -40,6 +41,10 @@
 
 ### Bugs / code cleanup
 
+* make input-detection it's own component => NEXT WIP
+
+* stuck on loading... on ffox, unclear why... had to reset ffox...
+* improve checkbox element
 * projectdata not loading on ffox mobile -> transpile maybe?
 * cleanup/remove old request functions
 * improve client filestructure (make subdirectories for components)
@@ -51,7 +56,8 @@
   longer than the input it will not re-trigger after input is finished,
   tho it's probably not too terrible cause links will be pasted most of
   the time...
-* make "input-overlay" it's own component
+* make "input-overlay" it's own component -> selection-box comp.,
+  (not yet used in menu glhf)
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router

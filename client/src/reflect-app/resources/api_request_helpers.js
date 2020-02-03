@@ -44,10 +44,9 @@ export async function apiPostRequest(apiUrl, params, header=defaultHeader) {
   return data;
 }
 
-export async function uploadFile(apiUrl, data, filename) {
+export async function uploadFile(apiUrl, data) {
   const formData = new FormData();
   formData.append('data', data);
-  formData.append('filename', filename);
   const options = {
     method: 'POST',
     body: formData,

@@ -13,8 +13,10 @@ export const api = new API(
   window.location.origin.toString() + '/api/',
   getAuthHeader()
 );
+export const localapi = new API('file://localfiles');
 // set api for inspector
 setApi(api);
+setApi(localapi);
 
 // new stuff
 api.addEventListener('error', console.log);
