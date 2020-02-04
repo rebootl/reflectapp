@@ -178,8 +178,11 @@ new Endpoint(app.route('/api/entries'), {
   },
   delete: async (obj, req) => {
     if (!req.user) return;
-    for (const image of obj.images) {
-      deleteImage(image);
+    // backwards compat.
+    if (obj.images) {
+      for (const image of obj.images) {
+        deleteImage(image);
+      }
     }
     data = data.filter((v) => v.id !== obj.id);
     writeData();
