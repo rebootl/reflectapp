@@ -43,6 +43,7 @@
 
 * make input-detection it's own component => NEXT WIP
 
+* wired link title is not correctly parsed...
 * stuck on loading... on ffox, unclear why... had to reset ffox...
 * improve checkbox element
 * projectdata not loading on ffox mobile -> transpile maybe?

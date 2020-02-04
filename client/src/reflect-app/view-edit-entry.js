@@ -1,7 +1,5 @@
 import { html, render } from 'lit-html';
 import { api } from './resources/api-service.js';
-import { uploadFile } from './resources/api_request_helpers.js';
-import { uploadImageUrl } from './resources/api-service.js';
 import './entry-header.js';
 import './entry-input.js';
 import './selection-box.js';
@@ -117,34 +115,21 @@ class ViewEditEntry extends HTMLElement {
     const result = this.shadowRoot.querySelector('entry-input').result;
     const selectionResult = this.shadowRoot.querySelector('selection-box').selectionResult;
     //console.log("result: ", result);
+
     // handle images
-    const currentImageFilenames = this.currentImages.map((i)=>i.filename);
-    if (result.images) {
-      for (const image of result.images) {
-        if (!currentImageFilenames.includes(image.filename)) {
-          // -> if not "keep local" upload
-          // -> upload
-          const res = await uploadFile(uploadImageUrl, image.file, image.filename);
-          //console.log(res);
-          if (res.success) {
-            image.uploaded = true;
-            image.filepath = res.filepath;
-          }
-          // -> if not success store local
-          delete image.file;
-          //console.log("image", image);
-          this.currentImages.push(image);
-        }
-      }
-    }
+    const newImages = await this.shadowRoot.querySelector('entry-input')
+      .storeUploadImages();
+
+    // filter text of images to remove
     const imagesToRemove = this.currentImages.filter((i)=>i.remove);
     let text = result.text;
     for (const image of imagesToRemove) {
       text = text.replace(image.placeholder, '');
     }
     this.shadowRoot.querySelector('entry-input').loadText(text);
+
+    // remove images to remove
     const currentImages = this.currentImages.filter((i)=>!i.remove);
-    // filter image tag ?
     const entry = {
       ...result,
       id: this.oldEntry.id,
@@ -154,7 +139,7 @@ class ViewEditEntry extends HTMLElement {
       tags: selectionResult.tags,
       private: _private,
       pinned: pinned,
-      images: currentImages,
+      images: [ ...currentImages, ...newImages ],
       text: text,
     };
     await db.update({ id: this.oldEntry.id }, entry);
