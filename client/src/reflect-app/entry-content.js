@@ -36,7 +36,7 @@ const style = html`
     }
     #linkbox {
       display: inline-block;
-      max-width: 575px;
+      max-width: 543px;
       overflow: hidden;
       border: 1px solid var(--on-background-border);
       border-radius: 4px;
@@ -57,6 +57,8 @@ const style = html`
     #linktitle {
       margin: 0;
       margin-top: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     #linkinfo {
       color: var(--light-text-low-emph);
