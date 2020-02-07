@@ -15,8 +15,9 @@ export const api = new API(
 );
 export const localapi = new API('file://localfiles');
 // set api for inspector
+// (only one api at a time)
 setApi(api);
-setApi(localapi);
+//setApi(localapi);
 
 // new stuff
 api.addEventListener('error', console.log);

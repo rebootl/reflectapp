@@ -36,7 +36,7 @@ class ImageStore {
     const db = await localapi.getSource('localimages');
     await db.add({
       filename: image.filename,
-      imageBlobData: await encodeData(imageBlob),
+      imageBase64: await encodeData(imageBlob),
     });
     console.log("stored image locally:", image.filename);
   }
@@ -47,16 +47,27 @@ class ImageStore {
     }
     return images;
   }
-  async getImage(filename) {
+  async getStoredImage(filename) {
     const db = await localapi.getSource('localimages');
     const [ image ] = await db.query({ filename: filename });
     console.log("get local image:", image.filename);
-    return new File([atob(image.imageBlobData)], filename);
+    const blob = await (await fetch(image.imageBase64)).blob()
+    const f = new File([blob], filename);
+    return f;
+  }
+  async deleteStoredImage(filename) {
+    const db = await localapi.getSource('localimages');
+    const r = await db.delete({ filename: filename });
+    console.log("deleted local image:", filename);
+    return r;
   }
   // upload storage
   async uploadStoredImage(filename) {
-    const imagefile = this.getImage(filename);
+    const imagefile = await this.getStoredImage(filename);
     const res = await this.uploadImage(imagefile);
+    if (res.uploaded) {
+      this.deleteStoredImage(filename);
+    }
     return res;
   }
   // upload
@@ -83,15 +94,6 @@ class ImageStore {
         image.filepath = res.filepath;
         delete image.file;
       }
-      /*
-      const res = await uploadFile(uploadImageUrl, imageFile);
-      if (res.success) {
-        image.uploaded = true;
-        image.filepath = res.filepath;
-        delete image.file;
-        console.log("uploaded image:", image.filename);
-      }*/
-      // -> if not success store local -> or throw maybe... ????
     }
     return images;
   }

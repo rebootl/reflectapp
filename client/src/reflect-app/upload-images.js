@@ -70,8 +70,6 @@ class UploadImages extends HTMLElement {
       // generate and insert placeholder
       const placeholder = `<image_placeholder ${file.name}>`;
       // prepare image object
-      //const imageBlob = await compressImage(file, 1920, 1920);
-      //console.log(imageBlob);
       const previewImageBlob = await compressImage(file, 240, 240);
       const previewImageData = await encodeData(previewImageBlob);
       const image = {
@@ -106,8 +104,6 @@ class UploadImages extends HTMLElement {
     let res = [];
     if (this.keepLocal) {
       res = await imagestore.storeImages(this.newImages);
-      //const test = await imagestore.getImage(res[0].filename);
-      //console.log("test", test);
     } else {
       res = await imagestore.uploadImages(this.newImages);
     }
@@ -115,7 +111,7 @@ class UploadImages extends HTMLElement {
     return res;
   }
   toggleKeepLocal() {
-    this.keepLocal ? this.keepLocal = false : this.keepLocal = true;
+    this.keepLocal = !this.keepLocal;
     this.update();
   }
   reset() {

@@ -2,9 +2,11 @@ import { html, render } from 'lit-html';
 import { api } from './resources/api-service.js';
 import './entry-header.js';
 import './entry-input.js';
-import './selection-box.js';
-import './entry-item.js';
+import './gen-elements/labelled-button.js';
 import './gen-elements/labelled-checkbox.js';
+//import './entry-item.js';
+import './selection-box.js';
+import './edit-images.js';
 
 const style = html`
   <style>
@@ -42,15 +44,6 @@ const style = html`
     #deleteButton {
       /* align to the right */
       margin-left: auto;
-    }
-    table {
-      border-collapse: collapse;
-    }
-    td, th {
-      border: 1px solid var(--on-background-border);
-    }
-    img.preview {
-      max-width: 100px;
     }
   </style>
 `;
@@ -117,19 +110,25 @@ class ViewEditEntry extends HTMLElement {
     //console.log("result: ", result);
 
     // handle images
-    const newImages = await this.shadowRoot.querySelector('entry-input')
-      .storeUploadImages();
-
+    // store/upload new images
+    const entryInputElement = this.shadowRoot.querySelector('entry-input');
+    const newImages = await entryInputElement.storeUploadImages();
+    // upload edited images
+    const editImagesElement = this.shadowRoot.querySelector('edit-images');
+    const currentImages = await editImagesElement.uploadStoredImages();
     // filter text of images to remove
-    const imagesToRemove = this.currentImages.filter((i)=>i.remove);
+    const imagesToRemove = currentImages.filter((i)=>i.remove);
     let text = result.text;
     for (const image of imagesToRemove) {
       text = text.replace(image.placeholder, '');
     }
     this.shadowRoot.querySelector('entry-input').loadText(text);
-
     // remove images to remove
-    const currentImages = this.currentImages.filter((i)=>!i.remove);
+    const updatedImages = currentImages.filter((i)=>!i.remove);
+    // remove local images to remove from store
+    await editImagesElement.removeMarkedLocalImages();
+
+    // assemble and store entry
     const entry = {
       ...result,
       id: this.oldEntry.id,
@@ -139,7 +138,7 @@ class ViewEditEntry extends HTMLElement {
       tags: selectionResult.tags,
       private: _private,
       pinned: pinned,
-      images: [ ...currentImages, ...newImages ],
+      images: [ ...updatedImages, ...newImages ],
       text: text,
     };
     await db.update({ id: this.oldEntry.id }, entry);
@@ -154,16 +153,15 @@ class ViewEditEntry extends HTMLElement {
     if (!confirm("Do you really want to delete this entry!")) return;
     const db = await api.getSource('entries');
     await db.delete({ id: this.oldEntry.id });
+    // remove local images
+    const editImagesElement = this.shadowRoot.querySelector('edit-images');
+    await editImagesElement.removeLocalImages();
     console.log("entry deleted!!");
     console.log("id: " + this.oldEntry.id);
     window.history.back();
   }
-  toggleImageRemoval(i) {
-    if (i.remove) i.remove = false;
-    else i.remove = true;
-    this.update();
-  }
   update() {
+    //console.log(this.oldEntry);
     render(html`${style}
       ${ this.oldEntry ?
         html`
@@ -194,20 +192,8 @@ class ViewEditEntry extends HTMLElement {
           <selection-box .loaditems=${this.oldEntry}
                          @selectionchanged=${(e)=>this.selectionResult = e.detail}>
           </selection-box>
-          <h2>Images:</h2>
-          <table id="imagetable">
-          ${ this.currentImages ?
-            this.currentImages.map((i) => html`
-              <tr>
-                <td><img class="preview" src="${i.previewData}" /></td>
-                <td>${i.filename}<br><small>${i.placeholder}</small></td>
-                <td>${ i.remove ?
-                  html`Marked for removal!<br><labelled-button
-                    @click=${e=>this.toggleImageRemoval(i)}>Undo</labelled-button>` :
-                  html`<labelled-button warn
-                    @click=${(e)=>this.toggleImageRemoval(i)}>Remove</labelled-button>` }</td>
-              </tr>`)
-            : html`` }`
+          <edit-images .loadimages=${this.currentImages}
+                       @imagechange=${(e)=>this.currentImages = e.detail}></edit-images>`
         : html`<pre>Ooops, entry not found... :/</pre>` }
       `, this.shadowRoot);
   }

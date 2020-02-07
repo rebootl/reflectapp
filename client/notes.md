@@ -43,6 +43,9 @@
 
 * make input-detection it's own component => NEXT WIP
 
+* source doesn't get updated
+* setting inspector localapi doesn't work?
+* doesn't work in ffox
 * wired link title is not correctly parsed...
 * stuck on loading... on ffox, unclear why... had to reset ffox...
 * improve checkbox element
