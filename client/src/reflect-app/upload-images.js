@@ -1,6 +1,5 @@
 import { html, render } from 'lit-html';
-import { imagestore, encodeData, compressImage }
-  from './resources/imagestore.js';
+import { imagestore, encodeData, compressImage } from './resources/imagestore.js';
 import './gen-elements/upload-button.js';
 
 const style = html`
@@ -45,74 +44,74 @@ class UploadImages extends HTMLElement {
     this.attachShadow({mode: 'open'});
     this.newImages = [];
     this.keepLocal = false;
+    this.loading = false;
   }
   connectedCallback() {
     this.update();
   }
-  async loadImage(files) {
-    // optimize into
-    /*
-    const newImages = await Promise.all(files.map(async (file)=>({
-      placeholder: placeholder,
-      filename: file.name,
-      osize: file.osize,
-      type: file.type,
-      lastModified: file.lastModified,
-      previewData: await compress(file, 240, 160),
-      imageData: await compress(file),
-    })));
-    */
-    for (const file of files) {
-      // check
-      if (!file.type.startsWith('image/')) continue;
-      // check if same image already loaded
-      if (this.newImages.map((v)=>v.filename).includes(file.name)) continue;
-      // generate and insert placeholder
-      const placeholder = `<image_placeholder ${file.name}>`;
-      // prepare image object
-      const previewImageBlob = await compressImage(file, 240, 240);
-      const previewImageData = await encodeData(previewImageBlob);
-      const image = {
-        placeholder: placeholder,
-        filename: file.name,
-        osize: file.size,
-        type: file.type,
-        lastModified: file.lastModified,
-        previewData: previewImageData,
-        file: file,
-        uploaded: false,
-      };
-      this.newImages.push(image);
-      this.dispatchEvent(new CustomEvent('addimage', {detail: image}));
-    }
-    this.updateImage();
+  async _loadImage(files) {
+    this.loading = true;
+    this.update();
+    const newImages = await Promise.all(Array.from(files)
+      .filter((file)=>file.type.startsWith('image/'))
+      .filter((file)=>!this.newImages.map((v)=>v.filename).includes(file.name))
+      .map(async (file)=>{
+        const placeholder = `<image_placeholder ${file.name}>`;
+        const blob = await compressImage(file, 240, 240);
+        const data = await encodeData(blob);
+        const image = {
+          placeholder: placeholder,
+          filename: file.name,
+          osize: file.size,
+          type: file.type,
+          lastModified: file.lastModified,
+          previewData: data,
+          file: file,
+          uploaded: false,
+        };
+        this.dispatchEvent(new CustomEvent('addimage', {detail: image}));
+        return image;
+      })
+    );
+    this.newImages = [ ...this.newImages, ...newImages ];
+    this.loading = false;
     this.update();
   }
-  removeImage(i) {
+  _removeImage(i) {
     this.newImages = this.newImages.filter((v)=>i.filename !== v.filename);
     this.dispatchEvent(new CustomEvent('removeimage', {detail: i}));
-    this.updateImage();
     this.update();
   }
-  updateImage() {
-    this.dispatchEvent(new CustomEvent('updateimage', {detail: {
-      newImages: this.newImages,
-    }}));
+  _toggleKeepLocal() {
+    this.keepLocal = !this.keepLocal;
+    this.update();
   }
   async storeUploadImages() {
     console.log('store images!!');
     let res = [];
     if (this.keepLocal) {
-      res = await imagestore.storeImages(this.newImages);
+      res = await Promise.all(this.newImages
+        .map(async (i) => {
+          i.storing = true;
+          this.update();
+          const r = await imagestore.storeImage(i)
+          delete i.storing;
+          this.update();
+          return r;
+        }));
     } else {
-      res = await imagestore.uploadImages(this.newImages);
+      res = await Promise.all(this.newImages
+        .map(async (i) => {
+          i.uploading = true;
+          this.update();
+          const r = await imagestore.uploadImage(i);
+          delete i.uploading;
+          this.update();
+          return r;
+        }));
     }
     this.reset();
     return res;
-  }
-  toggleKeepLocal() {
-    this.keepLocal = !this.keepLocal;
-    this.update();
   }
   reset() {
     this.newImages = [];
@@ -120,20 +119,23 @@ class UploadImages extends HTMLElement {
   }
   update() {
     render(html`${style}
-      <upload-button @change=${(e)=>this.loadImage(e.detail)}>
+      <upload-button @change=${(e)=>this._loadImage(e.detail)}>
         Image(s)...
       </upload-button>
       ${ this.newImages.length > 0 ? html`
         <labelled-checkbox ?checked=${this.keepLocal}
-                           @click=${()=>this.toggleKeepLocal()}>
+                           @click=${()=>this._toggleKeepLocal()}>
           <small>Keep local</small>
         </labelled-checkbox>` : html`` }
       <div id="imageUploadBox">
+        ${ this.loading ? html`<small>loading images...</small>` : html``}
         ${ this.newImages.map((i) => html`
           <div class="previewBox">
+            ${ i.storing ? html`storing...` : html`` }
+            ${ i.uploading ? html`uploading...` : html`` }
             <img class="newImagePreview" src="${i.previewData}" />
             <small>${i.filename}</small>
-            <labelled-button @click=${()=>this.removeImage(i)} warn>
+            <labelled-button @click=${()=>this._removeImage(i)} warn>
               <small>X</small>
             </labelled-button>
           </div>`) }

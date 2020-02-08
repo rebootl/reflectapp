@@ -32,20 +32,15 @@ export const encodeData = (file) => {
 class ImageStore {
   // local storage
   async storeImage(image) {
-    const imageBlob = await compressImage(image.file, 1920, 1920);
+    const blob = await compressImage(image.file, 1920, 1920);
     const db = await localapi.getSource('localimages');
     await db.add({
       filename: image.filename,
-      imageBase64: await encodeData(imageBlob),
+      imageBase64: await encodeData(blob),
     });
     console.log("stored image locally:", image.filename);
-  }
-  async storeImages(images) {
-    for (const image of images) {
-      await this.storeImage(image);
-      delete image.file;
-    }
-    return images;
+    delete image.file;
+    return image;
   }
   async getStoredImage(filename) {
     const db = await localapi.getSource('localimages');
@@ -61,17 +56,8 @@ class ImageStore {
     console.log("deleted local image:", filename);
     return r;
   }
-  // upload storage
-  async uploadStoredImage(filename) {
-    const imagefile = await this.getStoredImage(filename);
-    const res = await this.uploadImage(imagefile);
-    if (res.uploaded) {
-      this.deleteStoredImage(filename);
-    }
-    return res;
-  }
   // upload
-  async uploadImage(imagefile) {
+  async _uploadImage(imagefile) {
     const res = await uploadFile(uploadImageUrl, imagefile);
     if (res.success) {
       console.log("uploaded image:", imagefile.name);
@@ -83,19 +69,27 @@ class ImageStore {
     console.log("uploading failed...:", imagefile.name);
     return { uploaded: false };
   }
-  async uploadImages(images) {
-    for (const image of images) {
-      const imageBlob = await compressImage(image.file, 1920, 1920);
-      // recreate file from blob
-      const imageFile = new File([imageBlob], image.filename);
-      const res = await this.uploadImage(imageFile);
-      if (res.uploaded) {
-        image.uploaded = true;
-        image.filepath = res.filepath;
-        delete image.file;
-      }
+  async uploadImage(image) {
+    const blob = await compressImage(image.file, 1920, 1920);
+    const file = new File([blob], image.filename);
+    const res = await this._uploadImage(file);
+    if (res.uploaded) {
+      image.uploaded = true;
+      image.filepath = res.filepath;
+      delete image.file;
+      if (image.keepLocal) delete image.keepLocal;
+      if (image.upload) delete image.upload;
     }
-    return images;
+    return image;
+  }
+  // upload storage
+  async uploadStoredImage(filename) {
+    const imagefile = await this.getStoredImage(filename);
+    const res = await this._uploadImage(imagefile);
+    if (res.uploaded) {
+      this.deleteStoredImage(filename);
+    }
+    return res;
   }
 }
 

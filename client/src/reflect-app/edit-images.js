@@ -7,7 +7,6 @@ const style = html`
       display: flex;
       box-sizing: border-box;
       flex-wrap: wrap;
-      /*background-color: var(--bg-front);*/
     }
     .imageBox {
       display: flex;
@@ -61,24 +60,30 @@ class EditImages extends HTMLElement {
   async removeMarkedLocalImages() {
     // remove local images that are marked for removal from store
     // called when entry saved
-    for (const image of this.images) {
+    /*for (const image of this.images) {
       if (image.remove && !image.uploaded) {
         await imagestore.deleteStoredImage(image.filename);
       }
-    }
+    }*/
+    await Promise.all(this.images
+      .filter((i)=>i.remove && !i.uploaded)
+      .map((i)=>imagestore.deleteStoredImage(i.filename)));
   }
   async removeLocalImages() {
     // remove all loaded local images from store
     // called when entry deleted
-    for (const image of this.images) {
+    /*for (const image of this.images) {
       if (!image.uploaded) {
         await imagestore.deleteStoredImage(image.filename);
       }
-    }
+    }*/
+    await Promise.all(this.images
+    .filter((i)=>!i.uploaded)
+    .map((i)=>imagestore.deleteStoredImage(i.filename)));
   }
   async uploadStoredImages() {
     // also called when entry saved
-    for (const image of this.images) {
+    /*for (const image of this.images) {
       if (image.upload) {
         const r = await imagestore.uploadStoredImage(image.filename);
         if (r.uploaded) {
@@ -88,7 +93,23 @@ class EditImages extends HTMLElement {
         }
       }
     }
-    return this.images;
+    return this.images;*/
+    const images = await Promise.all(this.images.map(async (image) => {
+      if (image.upload) {
+        image.uploading = true;
+        this.update();
+        const r = await imagestore.uploadStoredImage(image.filename);
+        if (r.uploaded) {
+          image.filepath = r.filepath;
+          image.uploaded = true;
+          if (image.upload) delete image.upload;
+        }
+        delete image.uploading;
+        this.update();
+      }
+      return image;
+    }));
+    return images;
   }
   // (query on save instead)
   /*  this.dispatchChange();
@@ -100,6 +121,7 @@ class EditImages extends HTMLElement {
     render(html`${style}
       ${ this.images.map((i) => html`
         <div class="imageBox">
+          ${ i.uploading ? html`uploading...` : html`` }
           <img class="preview" src=${i.previewData} />
           <small class="filename">${i.filename}</small>
           ${ !i.uploaded && !i.remove ? html`
