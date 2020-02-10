@@ -1,6 +1,6 @@
 import Compressor from 'compressorjs';
 import { localapi } from './api-service.js';
-import { uploadFile } from './api_request_helpers.js';
+import { uploadFile, uploadFileProgress } from './api_request_helpers.js';
 import { uploadImageUrl } from './api-service.js';
 
 export const compressImage = (file, maxWidth=1920, maxHeight=1920) => {
@@ -56,17 +56,25 @@ class ImageStore {
     console.log("deleted local image:", filename);
     return r;
   }
+  async uploadStoredImage(filename) {
+    const imagefile = await this.getStoredImage(filename);
+    const res = await this._uploadImage(imagefile);
+    if (res.uploaded) {
+      this.deleteStoredImage(filename);
+    }
+    return res;
+  }
   // upload
-  async _uploadImage(imagefile) {
-    const res = await uploadFile(uploadImageUrl, imagefile);
+  async _uploadImage(file) {
+    const res = await uploadFile(uploadImageUrl, file);
     if (res.success) {
-      console.log("uploaded image:", imagefile.name);
+      console.log("uploaded image:", file.name);
       return {
         uploaded: true,
         filepath: res.filepath,
       };
     }
-    console.log("uploading failed...:", imagefile.name);
+    console.log("uploading failed...:", file.name);
     return { uploaded: false };
   }
   async uploadImage(image) {
@@ -82,14 +90,17 @@ class ImageStore {
     }
     return image;
   }
-  // upload storage
-  async uploadStoredImage(filename) {
-    const imagefile = await this.getStoredImage(filename);
-    const res = await this._uploadImage(imagefile);
-    if (res.uploaded) {
-      this.deleteStoredImage(filename);
-    }
-    return res;
+  // upload w/ progress
+  async _uploadImageProgress(file, image, component) {
+    const r = await uploadFileProgress(uploadImageUrl, file, image, component);
+    if (r.success) console.log("uploaded image:", file.name);
+    else console.log("uploading failed...:", file.name);
+    return r;
+  }
+  async uploadImageProgress(image, component) {
+    const blob = await compressImage(image.file, 1920, 1920);
+    const file = new File([blob], image.filename);
+    return await this._uploadImageProgress(file, image, component);
   }
 }
 

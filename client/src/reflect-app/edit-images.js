@@ -83,17 +83,6 @@ class EditImages extends HTMLElement {
   }
   async uploadStoredImages() {
     // also called when entry saved
-    /*for (const image of this.images) {
-      if (image.upload) {
-        const r = await imagestore.uploadStoredImage(image.filename);
-        if (r.uploaded) {
-          image.filepath = r.filepath;
-          image.uploaded = true;
-          if (image.upload) delete image.upload;
-        }
-      }
-    }
-    return this.images;*/
     const images = await Promise.all(this.images.map(async (image) => {
       if (image.upload) {
         image.uploading = true;

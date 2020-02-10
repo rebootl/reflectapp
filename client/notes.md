@@ -41,8 +41,8 @@
 
 ### Bugs / code cleanup
 
+* edit looses image comment sometimes!!?
 * make input-detection it's own component => NEXT WIP
-
 * source doesn't get updated
 * setting inspector localapi doesn't work?
 * doesn't work in ffox

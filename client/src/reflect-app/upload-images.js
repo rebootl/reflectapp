@@ -35,6 +35,9 @@ const style = html`
     .newImagePreview {
       width: 50px;
     }
+    progress {
+      max-width: 100%;
+    }
   </style>
 `;
 
@@ -102,12 +105,16 @@ class UploadImages extends HTMLElement {
     } else {
       res = await Promise.all(this.newImages
         .map(async (i) => {
-          i.uploading = true;
-          this.update();
-          const r = await imagestore.uploadImage(i);
-          delete i.uploading;
-          this.update();
-          return r;
+          // progress properties of image i are set inside upload function,
+          // this is used to call update
+          // -> better way ?
+          const r = await imagestore.uploadImageProgress(i, this);
+          if (r.success) {
+            i.uploaded = true;
+            i.filepath = r.filepath;
+            delete i.file;
+          }
+          return i;
         }));
     }
     this.reset();
@@ -132,12 +139,15 @@ class UploadImages extends HTMLElement {
         ${ this.newImages.map((i) => html`
           <div class="previewBox">
             ${ i.storing ? html`storing...` : html`` }
-            ${ i.uploading ? html`uploading...` : html`` }
+            ${ i.uploading ? html`uploading...
+              <progress max="100" value=${i.progress}>${i.progress}%</progress>
+              ` : html `` }
             <img class="newImagePreview" src="${i.previewData}" />
             <small>${i.filename}</small>
-            <labelled-button @click=${()=>this._removeImage(i)} warn>
-              <small>X</small>
-            </labelled-button>
+            ${ !i.uploading && !i.uploaded ? html`
+              <labelled-button @click=${()=>this._removeImage(i)} warn>
+                <small>X</small>
+              </labelled-button>` : html`` }
           </div>`) }
       </div>
       `, this.shadowRoot);
