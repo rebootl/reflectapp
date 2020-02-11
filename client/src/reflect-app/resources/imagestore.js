@@ -1,6 +1,7 @@
 import Compressor from 'compressorjs';
 import { localapi } from './api-service.js';
-import { uploadFile, uploadFileProgress } from './api_request_helpers.js';
+import { uploadFile, uploadFileProgress,
+  uploadFileGenerator } from './api_request_helpers.js';
 import { uploadImageUrl } from './api-service.js';
 
 export const compressImage = (file, maxWidth=1920, maxHeight=1920) => {
@@ -64,6 +65,17 @@ class ImageStore {
     }
     return res;
   }
+  async *uploadStoredImageGenerator(i) {
+    const file = await this.getStoredImage(i.filename);
+    let r = {}
+    for await (r of this._uploadImageGenerator(i, file)) {
+      yield r;
+    }
+    if (r.uploaded) {
+      this.deleteStoredImage(i.filename);
+    }
+    return r;
+  }
   // upload
   async _uploadImage(file) {
     const res = await uploadFile(uploadImageUrl, file);
@@ -101,6 +113,31 @@ class ImageStore {
     const blob = await compressImage(image.file, 1920, 1920);
     const file = new File([blob], image.filename);
     return await this._uploadImageProgress(file, image, component);
+  }
+  async *_uploadImageGenerator(i, file) {
+    i.uploading = true;
+    i.progress = 0.;
+    yield i;
+    let r = {}
+    for await (r of uploadFileGenerator(uploadImageUrl, file)) {
+      i.progress = r.progress;
+      yield i;
+    }
+    if (r.result.success) {
+      i.uploaded = true;
+      i.filepath = r.result.filepath;
+      delete i.file;
+    }
+    delete i.uploading;
+    delete i.progress;
+    return i;
+  }
+  async *uploadImageGenerator(i) {
+    const blob = await compressImage(i.file, 1920, 1920);
+    const file = new File([blob], i.filename);
+    for await (const r of this._uploadImageGenerator(i, file)) {
+      yield r;
+    }
   }
 }
 

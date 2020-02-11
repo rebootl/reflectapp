@@ -101,41 +101,38 @@ export async function* uploadFileGenerator(apiUrl, data) {
   const formData = new FormData();
   formData.append('data', data);
   const xhr = new XMLHttpRequest();
-
   let progress = 0.;
   let done = false;
-
+  let result = {};
   let res = () => {};
   let p = new Promise((r) => res = r);
-
   const update = () => {
     res();
     p = new Promise((r) => res = r);
   };
-
   xhr.upload.addEventListener('progress', (e) => {
     progress = (e.loaded / e.total) * 100;
+    console.log(progress);
     update();
-    //console.log(percent_complete);
-    //object.uploading = true;
-    //object.progress = percent_complete;
-    //component.update();
   });
   xhr.addEventListener('load', (e) => {
-    //console.log(xhr.response);
+    console.log(xhr.response);
+    result = xhr.response;
     done = true;
     update();
-    //res(xhr.response);
   });
   xhr.addEventListener('error', (e) => {
     console.log("Error during xhr transfer...", xhr.response);
-    //rej(xhr.response);
   });
+  xhr.responseType = 'json';
+  xhr.open('post', apiUrl);
+  xhr.setRequestHeader('Authorization', getAuthHeader()['Authorization']);
+  xhr.send(formData);
   while(!done) {
     await p;
     yield {
       progress: progress,
-      done: done,
+      result: result
     }
   }
 }

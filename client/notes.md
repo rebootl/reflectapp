@@ -4,11 +4,10 @@
   - code examples
   - fotos
 * jwt renewal?
-* images own source?
 * images access private protected by hash?
-* check if online?
 * image upload "TypeError: NetworkError when attempting to fetch resource."
   when server offline
+* on throttled conn. takes a moment till new entry appears...
 
 * service for images
   (image) -> id
@@ -18,18 +17,19 @@
 
 * add images
   - images removal, auto-edit text => DONE
-  - improve/adapt upload, display images in "uploadbuffer" (filenames)
-* show/hide private entries
-* show synced status (using entry property)
-* syntax highlighting
-* back button for single entry view
+  - improve/adapt upload, display images in "uploadbuffer" (filenames) => WIP
+  - abort image upload, how?
+
 * pagination
+* back button for single entry view
+* syntax highlighting
+* show synced status (using entry property)
 * edit preview
 * search
 * multi-user/platform POG
-* hide/show menu
+* hide/show menu -> CSS rework
 * online/offline indicator
-* protect url info request route => ?
+* protect url info request route -> maybe done?
 * early prevent creating duplicate tags inside add-items (would be nice)
 * maybe rework edit-input to "query" input instead
 * flash message after saving, message system?
@@ -42,32 +42,28 @@
 ### Bugs / code cleanup
 
 * edit looses image comment sometimes!!?
-* make input-detection it's own component => NEXT WIP
-* source doesn't get updated
+* make input-detection it's own component
+* source doesn't get updated -> projectData
 * setting inspector localapi doesn't work?
-* doesn't work in ffox
 * wired link title is not correctly parsed...
 * stuck on loading... on ffox, unclear why... had to reset ffox...
 * improve checkbox element
 * projectdata not loading on ffox mobile -> transpile maybe?
-* cleanup/remove old request functions
 * improve client filestructure (make subdirectories for components)
 * cleanups
   - cleanup console logs, more cleanups?
   - cleanup function naming (camelCase)
   - use connectedCallback for all elements
-* detection trigger not 100% reliable, i think if the detection takes
-  longer than the input it will not re-trigger after input is finished,
-  tho it's probably not too terrible cause links will be pasted most of
-  the time...
-* make "input-overlay" it's own component -> selection-box comp.,
-  (not yet used in menu glhf)
+* make "input-overlay" it's own component => DONE, selection-box comp.
+  - use in menu
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router
+  - rework
 
 ### Design/UI/UX adaptions/improvements
 
+* show/hide private entries
 * collapse entries
 * add favicon
 * rework CSS
@@ -82,6 +78,11 @@
 
 ### Done
 
+* detection trigger not 100% reliable, i think if the detection takes
+  longer than the input it will not re-trigger after input is finished,
+  tho it's probably not too terrible cause links will be pasted most of
+  the time... => WONTFIX, for now
+* cleanup/remove old request functions => DONE
 * image dir must be docker volume => DONE
 * storing entry when unchanged results in empty text => DONE
 * tag after creation not active, can lead to accidental deletion

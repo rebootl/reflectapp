@@ -83,8 +83,19 @@ class EditImages extends HTMLElement {
   }
   async uploadStoredImages() {
     // also called when entry saved
-    const images = await Promise.all(this.images.map(async (image) => {
-      if (image.upload) {
+    const images = await Promise.all(this.images.map(async (i) => {
+      if (i.upload) {
+        // sets i.uploading and i.progress during upload
+        // i.uploaded and i.filepath when success
+        console.log(i)
+        for await (const r of imagestore.uploadStoredImageGenerator(i)) {
+          i = r;
+          this.update();
+        }
+        if (i.uploaded) {
+          delete i.upload;
+        }
+        /*
         image.uploading = true;
         this.update();
         const r = await imagestore.uploadStoredImage(image.filename);
@@ -94,9 +105,9 @@ class EditImages extends HTMLElement {
           if (image.upload) delete image.upload;
         }
         delete image.uploading;
-        this.update();
+        this.update();*/
       }
-      return image;
+      return i;
     }));
     return images;
   }
@@ -110,7 +121,9 @@ class EditImages extends HTMLElement {
     render(html`${style}
       ${ this.images.map((i) => html`
         <div class="imageBox">
-          ${ i.uploading ? html`uploading...` : html`` }
+          ${ i.uploading ? html`uploading...
+            <progress max="100" value=${i.progress}>${i.progress}%</progress>
+            ` : html `` }
           <img class="preview" src=${i.previewData} />
           <small class="filename">${i.filename}</small>
           ${ !i.uploaded && !i.remove ? html`
@@ -121,14 +134,16 @@ class EditImages extends HTMLElement {
               Upload
             </labelled-checkbox>
             ` : html`` }
-          ${ i.remove ? html`
-            Marked for removal!
-            <labelled-button @click=${e=>this._toggleRemoval(i)}>
-              Keep
-            </labelled-button>` : html`
-            <labelled-button warn @click=${(e)=>this._toggleRemoval(i)}>
-              Remove
-            </labelled-button>` }
+          ${ !i.uploading ? html`
+            ${ i.remove ? html`
+              Marked for removal!
+              <labelled-button @click=${e=>this._toggleRemoval(i)}>
+                Keep
+              </labelled-button>` : html`
+              <labelled-button warn @click=${(e)=>this._toggleRemoval(i)}>
+                Remove
+              </labelled-button>` }
+          ` : html`` }
         </div>` )}
     `, this.shadowRoot);
   }

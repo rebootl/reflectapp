@@ -1,6 +1,8 @@
 import { html, render } from 'lit-html';
 import { imagestore, encodeData, compressImage } from './resources/imagestore.js';
 import './gen-elements/upload-button.js';
+import './gen-elements/labelled-checkbox.js';
+import './gen-elements/labelled-button.js';
 
 const style = html`
   <style>
@@ -105,14 +107,11 @@ class UploadImages extends HTMLElement {
     } else {
       res = await Promise.all(this.newImages
         .map(async (i) => {
-          // progress properties of image i are set inside upload function,
-          // this is used to call update
-          // -> better way ?
-          const r = await imagestore.uploadImageProgress(i, this);
-          if (r.success) {
-            i.uploaded = true;
-            i.filepath = r.filepath;
-            delete i.file;
+          // sets i.uploading and i.progress during upload
+          // i.uploaded and i.filepath when success
+          for await (const r of imagestore.uploadImageGenerator(i)) {
+            i = r;
+            this.update();
           }
           return i;
         }));
