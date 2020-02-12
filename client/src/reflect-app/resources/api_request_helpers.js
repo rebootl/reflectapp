@@ -122,7 +122,20 @@ export async function* uploadFileGenerator(apiUrl, data) {
     update();
   });
   xhr.addEventListener('error', (e) => {
-    console.log("Error during xhr transfer...", xhr.response);
+    const msg = "Error during xhr transfer...";
+    console.log(msg, xhr.response);
+    result.failed = true;
+    result.msg = msg;
+    done = true;
+    update();
+  });
+  xhr.addEventListener('abort', (e) => {
+    const msg = "Upload aborted...";
+    console.log(msg, xhr.response);
+    result.failed = true;
+    result.msg = msg;
+    done = true;
+    update();
   });
   xhr.responseType = 'json';
   xhr.open('post', apiUrl);
@@ -132,7 +145,8 @@ export async function* uploadFileGenerator(apiUrl, data) {
     await p;
     yield {
       progress: progress,
-      result: result
+      result: result,
+      request: xhr
     }
   }
 }

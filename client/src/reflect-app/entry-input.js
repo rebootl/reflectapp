@@ -247,9 +247,6 @@ class EntryInput extends HTMLElement {
   async storeUploadImages() {
     return await this.shadowRoot.querySelector('upload-images').storeUploadImages();
   }
-  /*updateImage(result) {
-    this.result = { ...this.result, newImages: result.newImages };
-  }*/
   reset() {
     this.shadowRoot.querySelector('#entry-text').reset();
     this.shadowRoot.querySelector('#comment').reset();

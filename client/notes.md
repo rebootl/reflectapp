@@ -16,9 +16,10 @@
 ### Features
 
 * add images
-  - images removal, auto-edit text => DONE
-  - improve/adapt upload, display images in "uploadbuffer" (filenames) => WIP
-  - abort image upload, how?
+  - abort image upload => WIP
+    - delete on server in case of failure of another image
+    - implement for edit-images
+  - edit-images "save and close", when new image broken?
 
 * pagination
 * back button for single entry view

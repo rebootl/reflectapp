@@ -62,6 +62,7 @@ class EntryCreate extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
+    this.storing = false;
   }
   connectedCallback() {
     this.update();
@@ -71,11 +72,20 @@ class EntryCreate extends HTMLElement {
     if (!this.valid) {
       return;
     }
+    this.storing = true;
+    this.update();
     const db = await api.getSource('entries');
     const date = new Date();
     // store images
     const images = await this.shadowRoot.querySelector('entry-input')
       .storeUploadImages();
+    //console.log(images);
+    if (images.failed) {
+      console.log("image upload failed, aborting entry creation...");
+      this.storing = false;
+      this.update();
+      return;
+    }
 
     let entry = {
       ...this.entry,
@@ -105,9 +115,11 @@ class EntryCreate extends HTMLElement {
     this.reset();
   }
   reset() {
+    this.storing = false;
     this.shadowRoot.querySelector('entry-input').reset();
     this.shadowRoot.querySelector('selection-box').reset();
     this.shadowRoot.querySelector('selection-box').updateNewItems();
+    this.update();
   }
   update() {
     const selectionClasses = { active: this.inputReady };
@@ -122,11 +134,13 @@ class EntryCreate extends HTMLElement {
       <div id="buttonsBox" class=${classMap(buttonBoxClasses)}>
         <labelled-button class="inline"
                          ?disabledstyle=${!this.valid}
+                         ?disabled=${this.storing}
                          @click=${()=>this.add_entry(false)}
                          label="Create">
         </labelled-button>
         <labelled-button class="inline"
                          ?disabledstyle=${!this.valid}
+                         ?disabled=${this.storing}
                          @click=${()=>this.add_entry(true)}
                          label="Create Private">
         </labelled-button>

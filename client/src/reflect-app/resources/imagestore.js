@@ -41,6 +41,7 @@ class ImageStore {
     });
     console.log("stored image locally:", image.filename);
     delete image.file;
+    if (image.failed) delete image.failed;
     return image;
   }
   async getStoredImage(filename) {
@@ -121,13 +122,19 @@ class ImageStore {
     let r = {}
     for await (r of uploadFileGenerator(uploadImageUrl, file)) {
       i.progress = r.progress;
+      i.request = r.request;
       yield i;
     }
     if (r.result.success) {
       i.uploaded = true;
       i.filepath = r.result.filepath;
-      delete i.file;
+      // delete file only later, if all uploads successful
+      //delete i.file;
+      if (i.failed) delete i.failed;
+    } else {
+      i.failed = true;
     }
+    delete i.request;
     delete i.uploading;
     delete i.progress;
     return i;

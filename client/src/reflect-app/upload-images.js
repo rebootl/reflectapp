@@ -116,8 +116,31 @@ class UploadImages extends HTMLElement {
           return i;
         }));
     }
-    this.reset();
+    // check for failed upload
+    for (const i of res) {
+      if (i.failed) {
+        this._handleUploadAbort();
+        res.failed = true;
+      }
+    }
+    // cleanup file object if everything ok
+    if (!res.failed) {
+      for (const i of res) {
+        delete i.file;
+        this.reset();
+      }
+    }
+    this.update();
     return res;
+  }
+  _handleUploadAbort() {
+    for (const i of this.newImages) {
+      if (i.uploaded) {
+        // -> delete on server
+        i.uploaded = false;
+        delete i.filepath;
+      }
+    }
   }
   reset() {
     this.newImages = [];
@@ -140,6 +163,9 @@ class UploadImages extends HTMLElement {
             ${ i.storing ? html`storing...` : html`` }
             ${ i.uploading ? html`uploading...
               <progress max="100" value=${i.progress}>${i.progress}%</progress>
+              <labelled-button @click=${()=>i.request.abort()} warn>
+                Abort
+              </labelled-button>
               ` : html `` }
             <img class="newImagePreview" src="${i.previewData}" />
             <small>${i.filename}</small>
