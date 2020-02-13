@@ -117,18 +117,19 @@ class UploadImages extends HTMLElement {
         }));
     }
     // check for failed upload
+    let failed = false;
     for (const i of res) {
-      if (i.failed) {
+      if (failed) {
         this._handleUploadAbort();
-        res.failed = true;
+        failed = true;
+        break;
       }
     }
+    if (failed) return false;
     // cleanup file object if everything ok
-    if (!res.failed) {
-      for (const i of res) {
-        delete i.file;
-        this.reset();
-      }
+    for (const i of res) {
+      delete i.file;
+      this.reset();
     }
     this.update();
     return res;

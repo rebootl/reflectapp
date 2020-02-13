@@ -7,18 +7,16 @@
 * images access private protected by hash?
 * image upload "TypeError: NetworkError when attempting to fetch resource."
   when server offline
-* on throttled conn. takes a moment till new entry appears...
-
-* service for images
-  (image) -> id
-  (id) -> status of the id
+* on throttled conn. takes a moment till new entry appears... -> probably the
+  ffox throttle feat.
+* tests?
 
 ### Features
 
 * add images
   - abort image upload => WIP
     - delete on server in case of failure of another image
-    - implement for edit-images
+    - implement for edit-images -> done, cleanup todo
   - edit-images "save and close", when new image broken?
 
 * pagination

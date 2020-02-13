@@ -60,11 +60,6 @@ class EditImages extends HTMLElement {
   async removeMarkedLocalImages() {
     // remove local images that are marked for removal from store
     // called when entry saved
-    /*for (const image of this.images) {
-      if (image.remove && !image.uploaded) {
-        await imagestore.deleteStoredImage(image.filename);
-      }
-    }*/
     await Promise.all(this.images
       .filter((i)=>i.remove && !i.uploaded)
       .map((i)=>imagestore.deleteStoredImage(i.filename)));
@@ -72,11 +67,6 @@ class EditImages extends HTMLElement {
   async removeLocalImages() {
     // remove all loaded local images from store
     // called when entry deleted
-    /*for (const image of this.images) {
-      if (!image.uploaded) {
-        await imagestore.deleteStoredImage(image.filename);
-      }
-    }*/
     await Promise.all(this.images
     .filter((i)=>!i.uploaded)
     .map((i)=>imagestore.deleteStoredImage(i.filename)));
@@ -87,7 +77,6 @@ class EditImages extends HTMLElement {
       if (i.upload) {
         // sets i.uploading and i.progress during upload
         // i.uploaded and i.filepath when success
-        //console.log(i)
         for await (const r of imagestore.uploadStoredImageGenerator(i)) {
           i = r;
           this.update();
@@ -95,31 +84,20 @@ class EditImages extends HTMLElement {
       }
       return i;
     }));
-    /*const failed = res.filter(i=>i.failed);
-    if (failed) {
-      this._handleUploadAbort();
-      res.failed = true;
-    } else {
-      for (const i of res) {
-        if (i.uploaded) delete i.upload;
-        if (i.file) delete i.file;
-      }
-    }
-    return res;
-  }*/
     // check for failed upload
+    let failed = false;
     for (const i of res) {
       if (i.failed) {
         this._handleUploadAbort();
-        res.failed = true;
+        failed = true;
+        break;
       }
     }
+    if (failed) return false;
     // cleanup file object if everything ok
-    if (!res.failed) {
-      for (const i of res) {
-        if (i.uploaded) delete i.upload;
-        if (i.file) delete i.file;
-      }
+    for (const i of res) {
+      if (i.uploaded) delete i.upload;
+      if (i.file) delete i.file;
     }
     return res;
   }

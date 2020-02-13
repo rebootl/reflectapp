@@ -92,7 +92,6 @@ class ViewEditEntry extends HTMLElement {
       this.oldEntry = entry;
       this.currentImages = entry.images || [];
     }
-    //console.log(this.oldEntry)
     this.update();
   }
   async saveEntry(close) {
@@ -109,8 +108,8 @@ class ViewEditEntry extends HTMLElement {
     // therefor querying the result here
     // alternative: set input via query
     const result = this.shadowRoot.querySelector('entry-input').result;
-    const selectionResult = this.shadowRoot.querySelector('selection-box').selectionResult;
-    //console.log("result: ", result);
+    const selectionResult = this.shadowRoot.querySelector('selection-box')
+      .selectionResult;
 
     // handle images
     // store/upload new images
@@ -119,7 +118,8 @@ class ViewEditEntry extends HTMLElement {
     // upload edited images
     const editImagesElement = this.shadowRoot.querySelector('edit-images');
     const currentImages = await editImagesElement.uploadStoredImages();
-    if (newImages.failed || currentImages.failed) {
+    // -> use try catch instead, but kinda stupid to do inside function...
+    if (!newImages || !currentImages) {
       console.log("image upload failed, aborting entry creation...");
       this.storing = false;
       this.update();
@@ -171,7 +171,6 @@ class ViewEditEntry extends HTMLElement {
     window.history.back();
   }
   update() {
-    //console.log(this.oldEntry);
     render(html`${style}
       ${ this.oldEntry ?
         html`
