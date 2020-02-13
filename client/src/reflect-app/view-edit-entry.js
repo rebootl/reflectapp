@@ -71,6 +71,7 @@ class ViewEditEntry extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
+    this.storing = false;
   }
   connectedCallback() {
     this.updateQuery();
@@ -95,6 +96,8 @@ class ViewEditEntry extends HTMLElement {
     this.update();
   }
   async saveEntry(close) {
+    this.storing = true;
+    this.update();
     const db = await api.getSource('entries');
     const mdate = new Date();
     const _private = this.shadowRoot.querySelector('#privateCheckbox').value;
@@ -116,6 +119,12 @@ class ViewEditEntry extends HTMLElement {
     // upload edited images
     const editImagesElement = this.shadowRoot.querySelector('edit-images');
     const currentImages = await editImagesElement.uploadStoredImages();
+    if (newImages.failed || currentImages.failed) {
+      console.log("image upload failed, aborting entry creation...");
+      this.storing = false;
+      this.update();
+      return;
+    }
     // filter text of images to remove
     const imagesToRemove = currentImages.filter((i)=>i.remove);
     let text = result.text;
@@ -147,6 +156,7 @@ class ViewEditEntry extends HTMLElement {
     if (close) window.history.back();
     // reset/update stuff
     this.shadowRoot.querySelector('selection-box').updateNewItems();
+    this.storing = false;
     this.updateQuery();
   }
   async deleteEntry() {
@@ -172,10 +182,10 @@ class ViewEditEntry extends HTMLElement {
                        cols="45" rows=${this.oldEntry.type === 'note' ? 10 : 1}>
           </entry-input>
           <div id="buttonsBox">
-            <labelled-button class="boxItem" ?disabled=${!this.valid}
+            <labelled-button class="boxItem" ?disabled=${!this.valid || this.storing}
                              @click=${()=>this.saveEntry()} label="Save">
             </labelled-button>
-            <labelled-button class="boxItem" ?disabled=${!this.valid}
+            <labelled-button class="boxItem" ?disabled=${!this.valid || this.storing}
                              @click=${()=>this.saveEntry(true)}
                              label="Save and Close">
             </labelled-button>

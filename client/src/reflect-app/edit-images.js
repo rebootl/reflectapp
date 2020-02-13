@@ -83,33 +83,54 @@ class EditImages extends HTMLElement {
   }
   async uploadStoredImages() {
     // also called when entry saved
-    const images = await Promise.all(this.images.map(async (i) => {
+    const res = await Promise.all(this.images.map(async (i) => {
       if (i.upload) {
         // sets i.uploading and i.progress during upload
         // i.uploaded and i.filepath when success
-        console.log(i)
+        //console.log(i)
         for await (const r of imagestore.uploadStoredImageGenerator(i)) {
           i = r;
           this.update();
         }
-        if (i.uploaded) {
-          delete i.upload;
-        }
-        /*
-        image.uploading = true;
-        this.update();
-        const r = await imagestore.uploadStoredImage(image.filename);
-        if (r.uploaded) {
-          image.filepath = r.filepath;
-          image.uploaded = true;
-          if (image.upload) delete image.upload;
-        }
-        delete image.uploading;
-        this.update();*/
       }
       return i;
     }));
-    return images;
+    /*const failed = res.filter(i=>i.failed);
+    if (failed) {
+      this._handleUploadAbort();
+      res.failed = true;
+    } else {
+      for (const i of res) {
+        if (i.uploaded) delete i.upload;
+        if (i.file) delete i.file;
+      }
+    }
+    return res;
+  }*/
+    // check for failed upload
+    for (const i of res) {
+      if (i.failed) {
+        this._handleUploadAbort();
+        res.failed = true;
+      }
+    }
+    // cleanup file object if everything ok
+    if (!res.failed) {
+      for (const i of res) {
+        if (i.uploaded) delete i.upload;
+        if (i.file) delete i.file;
+      }
+    }
+    return res;
+  }
+  _handleUploadAbort() {
+    for (const i of this.images) {
+      if (i.uploaded && i.upload) {
+        // -> delete on server
+        i.uploaded = false;
+        delete i.filepath;
+      }
+    }
   }
   // (query on save instead)
   /*  this.dispatchChange();
@@ -123,13 +144,16 @@ class EditImages extends HTMLElement {
         <div class="imageBox">
           ${ i.uploading ? html`uploading...
             <progress max="100" value=${i.progress}>${i.progress}%</progress>
+            <labelled-button @click=${()=>i.request.abort()} warn>
+              Abort
+            </labelled-button>
             ` : html `` }
           <img class="preview" src=${i.previewData} />
           <small class="filename">${i.filename}</small>
           ${ !i.uploaded && !i.remove ? html`
             stored locally<br>
             <labelled-checkbox class="uploadCheckbox"
-                               ?checked=${this.upload}
+                               ?checked=${i.upload}
                                @click=${e=>this._toggleUpload(i)}>
               Upload
             </labelled-checkbox>

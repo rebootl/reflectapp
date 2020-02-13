@@ -79,6 +79,7 @@ class EntryCreate extends HTMLElement {
     // store images
     const images = await this.shadowRoot.querySelector('entry-input')
       .storeUploadImages();
+      //.catch((e) => {
     //console.log(images);
     if (images.failed) {
       console.log("image upload failed, aborting entry creation...");
@@ -86,6 +87,7 @@ class EntryCreate extends HTMLElement {
       this.update();
       return;
     }
+    //}
 
     let entry = {
       ...this.entry,
