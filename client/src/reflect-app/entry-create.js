@@ -79,6 +79,7 @@ class EntryCreate extends HTMLElement {
     // store images
     const images = await this.shadowRoot.querySelector('entry-input')
       .storeUploadImages();
+    //console.log(images)
     // -> use try catch instead, but kinda stupid to do inside function...
     if (!images) {
       console.log("image upload failed, aborting entry creation...");

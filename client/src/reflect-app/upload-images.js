@@ -50,6 +50,9 @@ class UploadImages extends HTMLElement {
     this.newImages = [];
     this.keepLocal = false;
     this.loading = false;
+    this.uploading = false;
+    this.storing = false;
+    this.uploadResult = {};
   }
   connectedCallback() {
     this.update();
@@ -93,58 +96,53 @@ class UploadImages extends HTMLElement {
   }
   async storeUploadImages() {
     console.log('store images!!');
+    if (this.newImages.length === 0) return [];
     let res = [];
     if (this.keepLocal) {
-      res = await Promise.all(this.newImages
-        .map(async (i) => {
-          i.storing = true;
-          this.update();
+      this.storing = true;
+      this.update();
+      res = await Promise.all(this.newImages.map(async (i) => {
           const r = await imagestore.storeImage(i)
-          delete i.storing;
-          this.update();
           return r;
-        }));
+      }));
+      this.storing = false;
+      this.update();
     } else {
-      res = await Promise.all(this.newImages
-        .map(async (i) => {
-          // sets i.uploading and i.progress during upload
-          // i.uploaded and i.filepath when success
-          for await (const r of imagestore.uploadImageGenerator(i)) {
-            i = r;
-            this.update();
+      this.uploading = true;
+      this.uploadResult = { progress: 0. };
+      this.update();
+      for await (const r of imagestore.uploadMultiImagesGenerator(this.newImages)) {
+        // update progress
+        this.uploadResult = r;
+        this.update();
+      }
+      this.uploading = false;
+      this.update();
+      // handle the upload result
+      if (!this.uploadResult.result.success) return false;
+      res = this.newImages.map((i) => {
+        for (const r of this.uploadResult.result.files) {
+          if (i.filename === r.originalname) {
+            i.filepath = r.path;
+            break;
           }
-          return i;
-        }));
+        }
+        delete i.file;
+        i.uploaded = true;
+        return i;
+      });
     }
-    // check for failed upload
-    let failed = false;
-    for (const i of res) {
-      if (failed) {
-        this._handleUploadAbort();
-        failed = true;
-        break;
-      }
-    }
-    if (failed) return false;
-    // cleanup file object if everything ok
-    for (const i of res) {
-      delete i.file;
-      this.reset();
-    }
+    this.reset();
     this.update();
+    console.log(res)
     return res;
-  }
-  _handleUploadAbort() {
-    for (const i of this.newImages) {
-      if (i.uploaded) {
-        // -> delete on server
-        i.uploaded = false;
-        delete i.filepath;
-      }
-    }
   }
   reset() {
     this.newImages = [];
+    this.loading = false;
+    this.uploading = false;
+    this.storing = false;
+    this.uploadResult = {};
     this.update();
   }
   update() {
@@ -157,20 +155,23 @@ class UploadImages extends HTMLElement {
                            @click=${()=>this._toggleKeepLocal()}>
           <small>Keep local</small>
         </labelled-checkbox>` : html`` }
-      <div id="imageUploadBox">
-        ${ this.loading ? html`<small>loading images...</small>` : html``}
+        ${ this.loading ? html`<div><small>loading images...</small></div>` : html``}
+        ${ this.storing ? html`<div>storing images...</div>` : html`` }
+        ${ this.uploading ? html`
+          <div>uploading images...<br>
+            <progress max="100" value=${this.uploadResult.progress}></progress>
+            <labelled-button @click=${()=>this.uploadResult.request.abort()}
+                             warn>
+              Abort
+            </labelled-button>
+          </div>
+        ` : html `` }
+        <div id="imageUploadBox">
         ${ this.newImages.map((i) => html`
           <div class="previewBox">
-            ${ i.storing ? html`storing...` : html`` }
-            ${ i.uploading ? html`uploading...
-              <progress max="100" value=${i.progress}>${i.progress}%</progress>
-              <labelled-button @click=${()=>i.request.abort()} warn>
-                Abort
-              </labelled-button>
-              ` : html `` }
             <img class="newImagePreview" src="${i.previewData}" />
             <small>${i.filename}</small>
-            ${ !i.uploading && !i.uploaded ? html`
+            ${ !this.uploading && !i.uploaded ? html`
               <labelled-button @click=${()=>this._removeImage(i)} warn>
                 <small>X</small>
               </labelled-button>` : html`` }

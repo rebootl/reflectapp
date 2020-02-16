@@ -6,7 +6,7 @@ import { getAuthHeader } from './auth.js';
 // request/server urls
 export const loginUrl = '/api/login';
 export const urlInfoUrl = '/api/urlinfo';
-export const uploadImageUrl = '/api/uploadImage';
+export const uploadMultiImagesUrl = '/api/uploadMultiImages';
 
 // api
 export const api = new API(

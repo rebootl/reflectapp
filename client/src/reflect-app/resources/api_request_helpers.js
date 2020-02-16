@@ -68,38 +68,11 @@ export async function uploadFile(apiUrl, data) {
   return resultData;
 }
 
-export function uploadFileProgress(apiUrl, data, object, component) {
-  return new Promise((res, rej) => {
-    const formData = new FormData();
-    formData.append('data', data);
-    const xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', (e) => {
-      //console.log(xhr.response);
-      delete object.uploading;
-      delete object.progress;
-      res(xhr.response);
-    });
-    xhr.addEventListener('error', (e) => {
-      console.log("Error during xhr transfer...", xhr.response);
-      rej(xhr.response);
-    });
-    xhr.upload.addEventListener('progress', (e) => {
-    	const percent_complete = (e.loaded / e.total) * 100;
-    	//console.log(percent_complete);
-      object.uploading = true;
-      object.progress = percent_complete;
-      component.update();
-    });
-    xhr.responseType = 'json';
-    xhr.open('post', apiUrl);
-    xhr.setRequestHeader('Authorization', getAuthHeader()['Authorization']);
-    xhr.send(formData);
-  });
-}
-
-export async function* uploadFileGenerator(apiUrl, data) {
+export async function* uploadMultiFilesGenerator(apiUrl, files) {
   const formData = new FormData();
-  formData.append('data', data);
+  for (const f of files) {
+    formData.append('filedata', f);
+  }
   const xhr = new XMLHttpRequest();
   let progress = 0.;
   let done = false;
@@ -112,7 +85,7 @@ export async function* uploadFileGenerator(apiUrl, data) {
   };
   xhr.upload.addEventListener('progress', (e) => {
     progress = (e.loaded / e.total) * 100;
-    console.log(progress);
+    //console.log(progress);
     update();
   });
   xhr.addEventListener('load', (e) => {
@@ -124,16 +97,12 @@ export async function* uploadFileGenerator(apiUrl, data) {
   xhr.addEventListener('error', (e) => {
     const msg = "Error during xhr transfer...";
     console.log(msg, xhr.response);
-    result.failed = true;
-    result.msg = msg;
     done = true;
     update();
   });
   xhr.addEventListener('abort', (e) => {
     const msg = "Upload aborted...";
     console.log(msg, xhr.response);
-    result.failed = true;
-    result.msg = msg;
     done = true;
     update();
   });

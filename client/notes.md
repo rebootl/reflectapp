@@ -14,10 +14,7 @@
 ### Features
 
 * add images
-  - abort image upload => WIP
-    - delete on server in case of failure of another image
-    - implement for edit-images -> done, cleanup todo
-  - edit-images "save and close", when new image broken?
+  - if image locally not found, maybe on other device
 
 * pagination
 * back button for single entry view
@@ -77,6 +74,13 @@
 
 ### Done
 
+* add images
+  - abort image upload => DONE
+    - delete on server in case of failure of another image => RESOLVED,
+      making one request for multiple images, fixed deletion on server
+    - implement for edit-images => DONE
+  - edit-images "save and close", when new image broken? => FIXED,
+    couldn't reproduce anymore
 * detection trigger not 100% reliable, i think if the detection takes
   longer than the input it will not re-trigger after input is finished,
   tho it's probably not too terrible cause links will be pasted most of

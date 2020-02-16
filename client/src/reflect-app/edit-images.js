@@ -4,8 +4,11 @@ import { imagestore } from './resources/imagestore.js';
 const style = html`
   <style>
     :host {
-      display: flex;
+      display: block;
       box-sizing: border-box;
+    }
+    #imageUploadBox {
+      display: flex;
       flex-wrap: wrap;
     }
     .imageBox {
@@ -40,6 +43,8 @@ class EditImages extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
+    this.uploading = false;
+    this.uploadResult = {};
   }
   connectedCallback() {
     this.update();
@@ -73,59 +78,53 @@ class EditImages extends HTMLElement {
   }
   async uploadStoredImages() {
     // also called when entry saved
-    const res = await Promise.all(this.images.map(async (i) => {
-      if (i.upload) {
-        // sets i.uploading and i.progress during upload
-        // i.uploaded and i.filepath when success
-        for await (const r of imagestore.uploadStoredImageGenerator(i)) {
-          i = r;
-          this.update();
+    const imagesToUpload = this.images.filter((i)=>i.upload);
+    //console.log(imagesToUpload)
+    if (imagesToUpload.length === 0) return this.images;
+    const imagesRest = this.images.filter((i)=>!i.upload);
+    this.uploading = true;
+    this.uploadResult = { progress: 0. };
+    this.update();
+    for await (const r of imagestore.uploadMultiStoredImagesGenerator(imagesToUpload)) {
+      this.uploadResult = r;
+      this.update();
+    }
+    this.uploading = false;
+    this.update();
+    // handle the upload result
+    if (!this.uploadResult.result.success) return false;
+    const res = imagesToUpload.map((i) => {
+      for (const r of this.uploadResult.result.files) {
+        if (i.filename === r.originalname) {
+          i.filepath = r.path;
+          i.uploaded = true;
+          if (i.file) delete i.file;  // -> not needed...
+          if (i.upload) delete i.upload;
+          return i;
         }
       }
-      return i;
-    }));
-    // check for failed upload
-    let failed = false;
-    for (const i of res) {
-      if (i.failed) {
-        this._handleUploadAbort();
-        failed = true;
-        break;
-      }
+    });
+    for (const r of res) {
+      imagestore.deleteStoredImage(r.filename);
     }
-    if (failed) return false;
-    // cleanup file object if everything ok
-    for (const i of res) {
-      if (i.uploaded) delete i.upload;
-      if (i.file) delete i.file;
-    }
-    return res;
+    console.log(res)
+    return [ ...imagesRest, ...res ];
   }
-  _handleUploadAbort() {
-    for (const i of this.images) {
-      if (i.uploaded && i.upload) {
-        // -> delete on server
-        i.uploaded = false;
-        delete i.filepath;
-      }
-    }
-  }
-  // (query on save instead)
-  /*  this.dispatchChange();
-  dispatchChange() {
-    this.dispatchEvent(new CustomEvent('imagechange', {detail: this.images}));
-    this.update();
-  }*/
   update() {
     render(html`${style}
+      ${ this.uploading ? html`
+        <div>
+          uploading...<br>
+          <progress max="100" value=${this.uploadResult.progress}></progress>
+          <labelled-button @click=${()=>this.uploadResult.request.abort()}
+                           warn>
+            Abort
+          </labelled-button>
+        </div>
+        ` : html `` }
+        <div id="imageUploadBox">
       ${ this.images.map((i) => html`
         <div class="imageBox">
-          ${ i.uploading ? html`uploading...
-            <progress max="100" value=${i.progress}>${i.progress}%</progress>
-            <labelled-button @click=${()=>i.request.abort()} warn>
-              Abort
-            </labelled-button>
-            ` : html `` }
           <img class="preview" src=${i.previewData} />
           <small class="filename">${i.filename}</small>
           ${ !i.uploaded && !i.remove ? html`
@@ -136,7 +135,7 @@ class EditImages extends HTMLElement {
               Upload
             </labelled-checkbox>
             ` : html`` }
-          ${ !i.uploading ? html`
+          ${ !this.uploading ? html`
             ${ i.remove ? html`
               Marked for removal!
               <labelled-button @click=${e=>this._toggleRemoval(i)}>
@@ -147,6 +146,7 @@ class EditImages extends HTMLElement {
               </labelled-button>` }
           ` : html`` }
         </div>` )}
+        </div>
     `, this.shadowRoot);
   }
 }

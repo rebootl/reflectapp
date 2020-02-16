@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import request from 'request'; // for url info request
 import cheerio from 'cheerio'; // html parsing
-import multer from 'multer'; // multipart form upload (used for images)
+import fileupload from 'express-fileupload';
 import Endpoint from '@lsys/projectData/dist/Endpoint';
 import { CustomQuery } from '@lsys/projectData/dist/Misc/Custom';
 import { port, secret, user } from './config.js';
@@ -30,6 +30,9 @@ app.use(expressJwt({
   secret: secret,
   credentialsRequired: false
 }));
+app.use(fileupload({
+  createParentPath: true
+}));
 
 // static files (incl. client)
 app.use('/', express.static(staticDir,));
@@ -47,22 +50,21 @@ const writeData = () => {
 
 // setup image storage
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+function storeImage(i) {
+  return new Promise((res, rej) => {
     const randomDirName = crypto.randomBytes(20).toString('hex');
-    const imagepath = path.join(staticDir, mediaDir, randomDirName);
-    fs.mkdir(imagepath, {recursive: true}, (err) => {
-      if (err) console.log('error creating path:', err);
-      cb(null, imagepath);
+    const imagepath = path.join(staticDir, mediaDir, randomDirName, i.name);
+    console.log('saving image: ', imagepath);
+    i.mv(imagepath, (err) => {
+      if (err) rej(err);
+      res({
+        originalname: i.name,
+        path: imagepath.replace(staticDir, ''),
+        size: i.size
+      });
     });
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  }
-});
-// -> setup image filter (check for image)
-
-const upload = multer({ storage: storage });
+  });
+}
 
 function deleteImage(image) {
   if (!image.uploaded) return image;
@@ -70,13 +72,13 @@ function deleteImage(image) {
     console.log("image has no filepath argument, returning");
     return image;
   }
-  const filepath = path.join(staticDir, image.filepath);
-  fs.unlink(filepath, (err) => {
+  const fp = path.join(staticDir, image.filepath);
+  fs.unlink(fp, (err) => {
     if (err) console.log('error deleting image:', err);
-    console.log('deleted image', filepath);
-    fs.rmdir(path.dirname(filepath), (err) => {
+    console.log('deleted image', fp);
+    fs.rmdir(path.dirname(fp), (err) => {
       if (err) console.log('error removing directory: ', err);
-      console.log('directory removed:', path.dirname(filepath));
+      console.log('directory removed:', path.dirname(fp));
     });
   });
 }
@@ -125,7 +127,11 @@ app.post('/api/login', (req, res) => {
 });
 
 app.get('/api/urlinfo', (req, res) => {
-  if (!req.user) res.sendStatus(401);
+  if (!req.user) {
+    console.log('unallowed urlinfo request rejected');
+    res.sendStatus(401);
+    return;
+  }
   const url = req.query.url;
   console.log("url request: ", url);
   request(url, (error, response, body) => {
@@ -148,13 +154,27 @@ app.get('/api/urlinfo', (req, res) => {
   });
 });
 
-app.post('/api/uploadImage', upload.single('data'), (req, res) => {
-  if (!req.user) res.sendStatus(401);
-  const path = req.file.path.replace(staticDir, '');
-  console.log('store image:', path);
+app.post('/api/uploadMultiImages', async (req, res) => {
+  if (!req.user) {
+    console.log('unallowed image upload rejected');
+    res.sendStatus(401);
+    return;
+  }
+  //console.log(req.user)
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+  let files = [];
+  const filedata = req.files.filedata;
+  if (Array.isArray(filedata)) {
+    files = await Promise.all(filedata.map(async (f) => await storeImage(f)));
+  } else {
+    files.push(await storeImage(filedata));
+  }
+  //console.log(files)
   res.send({
     success: true,
-    filepath: path,
+    files: files
   });
 });
 
