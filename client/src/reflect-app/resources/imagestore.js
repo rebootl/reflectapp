@@ -1,6 +1,6 @@
 import Compressor from 'compressorjs';
 import { localapi } from './api-service.js';
-import { uploadFile, uploadMultiFilesGenerator } from './api_request_helpers.js';
+import { uploadMultiFilesGenerator } from './api_request_helpers.js';
 import { uploadMultiImagesUrl } from './api-service.js';
 
 export const compressImage = (file, maxWidth=1920, maxHeight=1920) => {
@@ -44,12 +44,22 @@ class ImageStore {
     return image;
   }
   async getStoredImage(filename) {
+    //console.log("get local image:", filename);
     const db = await localapi.getSource('localimages');
     const [ image ] = await db.query({ filename: filename });
-    console.log("get local image:", image.filename);
-    const blob = await (await fetch(image.imageBase64)).blob()
+    if (!image) return false;
+    const blob = await (await fetch(image.imageBase64)).blob();
     const f = new File([blob], filename);
     return f;
+  }
+  async isStoredImage(filename) {
+    const db = await localapi.getSource('localimages');
+    const [ image ] = await db.query({ filename: filename });
+    if (!image) {
+      console.log('not found', filename)
+      return false;
+    }
+    return true;
   }
   async deleteStoredImage(filename) {
     const db = await localapi.getSource('localimages');
@@ -62,6 +72,15 @@ class ImageStore {
     const files = await Promise.all(images.map(async (i) => {
       return await this.getStoredImage(i.filename)
     }));
+    console.log(files)
+    for (const f of files) {
+      if (!f) {
+        yield {
+          result: 'notfound',
+        };
+        return;
+      }
+    }
     for await (const r of uploadMultiFilesGenerator(uploadMultiImagesUrl, files)) {
       yield r;
     }

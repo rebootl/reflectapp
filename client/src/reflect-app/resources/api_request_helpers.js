@@ -116,6 +116,6 @@ export async function* uploadMultiFilesGenerator(apiUrl, files) {
       progress: progress,
       result: result,
       request: xhr
-    }
+    };
   }
 }

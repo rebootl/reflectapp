@@ -14,7 +14,7 @@
 ### Features
 
 * add images
-  - if image locally not found, maybe on other device
+  - if image locally not found, maybe on other device => WIP, test
 
 * pagination
 * back button for single entry view
