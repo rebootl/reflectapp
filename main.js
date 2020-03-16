@@ -10,8 +10,8 @@ import bcrypt from 'bcrypt';
 import request from 'request'; // for url info request
 import cheerio from 'cheerio'; // html parsing
 import fileupload from 'express-fileupload';
-import Endpoint from '@lsys/projectData/dist/Endpoint';
-import { CustomQuery } from '@lsys/projectData/dist/Misc/Custom';
+import Endpoint from '@lsys/projectData/esm/Endpoint';
+import { CustomQuery } from '@lsys/projectData/esm/Misc/Custom';
 import { port, secret, user } from './config.js';
 
 // files/paths
@@ -23,6 +23,12 @@ const mediaDir = 'media';
 // setup app
 
 const app = express();
+
+// this is needed for express-ws (projectData adaption, WIP?)
+// acc. to docs: const expressWs = require('express-ws')(app);
+// using esm:
+import expressWs from 'express-ws';
+expressWs(app);
 
 app.use(bodyParser.json({limit: '10mb', extended: true}));
 app.use(compression());
@@ -180,7 +186,7 @@ app.post('/api/uploadMultiImages', async (req, res) => {
 
 // projectData endpoints
 
-new Endpoint(app.route('/api/entries'), {
+app.use('/api/entries', new Endpoint({
   query: new CustomQuery({ update: ()=>data }),
   id: (e) => e.id,
   filter: (e, req) => {
@@ -220,7 +226,7 @@ new Endpoint(app.route('/api/entries'), {
     data.push(newObj);
     writeData();
   }
-});
+}).router);
 
 app.listen(port);
 console.log('listening on ' + port);
