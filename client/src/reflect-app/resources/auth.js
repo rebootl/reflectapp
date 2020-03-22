@@ -41,7 +41,6 @@ export async function login(username, pw) {
     // store JWT
     localStorage.setItem('access_token', login_resp.token);
     localStorage.setItem('username', username);
-    await api.setParams({'Authorization':  'Bearer ' + login_resp.token});
     await api.reset();
     return true;
   }
@@ -50,6 +49,5 @@ export async function login(username, pw) {
 export async function logout() {
   localStorage.removeItem('username');
   localStorage.removeItem('access_token');
-  await api.setParams({});
   await api.reset();
 }
