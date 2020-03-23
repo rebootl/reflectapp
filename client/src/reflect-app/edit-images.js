@@ -49,19 +49,6 @@ class EditImages extends HTMLElement {
   connectedCallback() {
     this.update();
   }
-  _toggleRemoval(i) {
-    i.remove = !i.remove;
-    this.update();
-  }
-  _toggleUpload(i) {
-    // -> make this button "upload now" instead ?!
-    if (i.upload) {
-      delete i.upload;
-    } else {
-      i.upload = true;
-    }
-    this.update();
-  }
   async removeMarkedLocalImages() {
     // remove local images that are marked for removal from store
     // called when entry saved
@@ -73,7 +60,7 @@ class EditImages extends HTMLElement {
     // remove all loaded local images from store
     // called when entry deleted
     await Promise.all(this.images
-      .filter((i)=>!i.uploaded)
+      .filter((i)=>!i.uploaded && i.foundLocal)
       .map((i)=>imagestore.deleteStoredImage(i.filename)));
   }
   async uploadStoredImages() {
@@ -84,7 +71,6 @@ class EditImages extends HTMLElement {
     this.uploading = true;
     this.uploadResult = { progress: 0. };
     this.update();
-    console.log(imagesToUpload)
     for await (const r of imagestore.uploadMultiStoredImagesGenerator(imagesToUpload)) {
       this.uploadResult = r;
       this.update();
@@ -97,7 +83,6 @@ class EditImages extends HTMLElement {
       console.log("local image not found (this shouldn't happen): ", this.uploadResult.f);
       return false;
     }
-    console.log('uploadresult', this.uploadResult)
     if (!this.uploadResult.result.success) return false;
     const res = imagesToUpload.map((i) => {
       for (const r of this.uploadResult.result.files) {
@@ -114,16 +99,26 @@ class EditImages extends HTMLElement {
     for (const r of res) {
       imagestore.deleteStoredImage(r.filename);
     }
-    console.log(res)
     return [ ...imagesRest, ...res ];
   }
   _showRemoveImage(i) {
-    console.log(i.uploaded)
     if (this.uploading) return false;
     if (i.uploaded) return true;
     if (i.upload) return false;
-    if (i.foundLocal) return true;
-    return false;
+    return true;
+  }
+  _toggleRemoval(i) {
+    i.remove = !i.remove;
+    this.update();
+  }
+  _toggleUpload(i) {
+    // -> make this button "upload now" instead ?!
+    if (i.upload) {
+      delete i.upload;
+    } else {
+      i.upload = true;
+    }
+    this.update();
   }
   async update() {
     const images = await Promise.all(this.images.map(async (i) => {

@@ -44,10 +44,10 @@ class ImageStore {
     return image;
   }
   async getStoredImage(filename) {
-    //console.log("get local image:", filename);
     const db = await localapi.getSource('localimages');
     const [ image ] = await db.query({ filename: filename });
     if (!image) return false;
+    console.log("got local image:", filename);
     const blob = await (await fetch(image.imageBase64)).blob();
     const f = new File([blob], filename);
     return f;
@@ -56,9 +56,10 @@ class ImageStore {
     const db = await localapi.getSource('localimages');
     const [ image ] = await db.query({ filename: filename });
     if (!image) {
-      console.log('not found', filename)
+      //console.log("stored image not found:", filename)
       return false;
     }
+    //console.log("stored image found:", filename)
     return true;
   }
   async deleteStoredImage(filename) {
@@ -72,7 +73,6 @@ class ImageStore {
     const files = await Promise.all(images.map(async (i) => {
       return await this.getStoredImage(i.filename)
     }));
-    console.log(files)
     for (const f of files) {
       if (!f) {
         yield {

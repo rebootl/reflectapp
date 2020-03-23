@@ -15,6 +15,13 @@
 
 * add images
   - if image locally not found, maybe on other device => WIP, test
+  - cleanup local image db on logout
+  - keep local new image and upload local stored one looses new image
+    => RESOLVED, only happens on ffox throttled mode
+
+* checkbox click on label triggers event but not checkmark
+* changing text and saving deletes image comment
+  also check url
 
 * pagination
 * back button for single entry view

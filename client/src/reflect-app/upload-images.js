@@ -134,7 +134,6 @@ class UploadImages extends HTMLElement {
     }
     this.reset();
     this.update();
-    console.log(res)
     return res;
   }
   reset() {

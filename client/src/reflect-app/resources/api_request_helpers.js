@@ -85,24 +85,20 @@ export async function* uploadMultiFilesGenerator(apiUrl, files) {
   };
   xhr.upload.addEventListener('progress', (e) => {
     progress = (e.loaded / e.total) * 100;
-    //console.log(progress);
     update();
   });
   xhr.addEventListener('load', (e) => {
-    console.log(xhr.response);
     result = xhr.response;
     done = true;
     update();
   });
   xhr.addEventListener('error', (e) => {
-    const msg = "Error during xhr transfer...";
-    console.log(msg, xhr.response);
+    console.log("Error during xhr transfer...", xhr.response);
     done = true;
     update();
   });
   xhr.addEventListener('abort', (e) => {
-    const msg = "Upload aborted...";
-    console.log(msg, xhr.response);
+    console.log("Upload aborted...", xhr.response);
     done = true;
     update();
   });
