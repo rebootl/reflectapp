@@ -68,6 +68,11 @@ class ImageStore {
     console.log("deleted local image:", filename);
     return r;
   }
+  async cleanupLocalStorage() {
+    const db = await localapi.getSource('localimages');
+    db.delete({});
+    console.log("cleared local images");
+  }
   // upload local storage
   async *uploadMultiStoredImagesGenerator(images) {
     const files = await Promise.all(images.map(async (i) => {

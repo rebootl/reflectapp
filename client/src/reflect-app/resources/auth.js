@@ -1,5 +1,6 @@
 import { apiPostRequest } from './api_request_helpers.js'
 import { api, loginUrl } from './api-service.js';
+import { imagestore } from './imagestore.js';
 
 export function loggedIn() {
   if (localStorage.getItem('access_token')) return true;
@@ -49,5 +50,7 @@ export async function login(username, pw) {
 export async function logout() {
   localStorage.removeItem('username');
   localStorage.removeItem('access_token');
+  // delete locally stored images
+  imagestore.cleanupLocalStorage();
   await api.reset();
 }

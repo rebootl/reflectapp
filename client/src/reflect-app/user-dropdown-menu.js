@@ -77,6 +77,8 @@ class UserDropdownMenu extends HTMLElement {
     //}
   }
   logout() {
+    if (!confirm("Warning, logging out will delete all locally stored images!"))
+      return;
     logout();
     window.location.reload();
     // -> check return ?
