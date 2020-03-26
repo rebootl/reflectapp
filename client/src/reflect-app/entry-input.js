@@ -114,7 +114,7 @@ class EntryInput extends HTMLElement {
     this.result = {...this.result, comment: v};
   }
   get comment() {
-    return this._comment || "";
+    return this._comment || this.oldEntry.comment || "";
   }
   /*set images(v) {
     this._images = v;

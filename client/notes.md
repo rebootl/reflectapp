@@ -2,26 +2,16 @@
 
 * add entries (on prod.):
   - code examples
-  - fotos
 * jwt renewal?
 * images access private protected by hash?
 * image upload "TypeError: NetworkError when attempting to fetch resource."
   when server offline
-* on throttled conn. takes a moment till new entry appears... -> probably the
-  ffox throttle feat.
 * tests?
 
 ### Current
 
-* add images => DONE
-  - if image locally not found, maybe on other device => DONE
-  - cleanup local image db on logout => DONE
-  - keep local new image and upload local stored one looses new image
-    => RESOLVED, only happens on ffox throttled mode
-
+* editing link and saving leads to empty text
 * checkbox click on label triggers event but not checkmark
-* changing text and saving deletes image comment
-  also check url
 
 ### Features
 
@@ -83,7 +73,12 @@
 
 ### Done
 
+* changing text and saving deletes image comment => FIXED
 * add images
+  - if image locally not found, maybe on other device => DONE
+  - cleanup local image db on logout => DONE
+  - keep local new image and upload local stored one looses new image
+    => RESOLVED, only happens on ffox throttled mode
   - abort image upload => DONE
     - delete on server in case of failure of another image => RESOLVED,
       making one request for multiple images, fixed deletion on server
