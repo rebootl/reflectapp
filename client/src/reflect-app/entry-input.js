@@ -52,11 +52,7 @@ const style = html`
       color: var(--light-text-med-emph);
     }
     #comment {
-      display: none;
       margin-bottom: 5px;
-    }
-    #comment.active {
-      display: block;
     }
   </style>
 `;
@@ -102,7 +98,6 @@ class EntryInput extends HTMLElement {
   }
   set result(v) {
     this._result = v;
-    //console.log(v);
     this.dispatchEvent(new CustomEvent('inputchange', {detail: v}));
     this.update();
   }
@@ -115,6 +110,9 @@ class EntryInput extends HTMLElement {
   }
   get comment() {
     return this._comment || this.oldEntry.comment || "";
+  }
+  get initialText() {
+    return this.oldEntry.text || "";
   }
   /*set images(v) {
     this._images = v;
@@ -193,7 +191,7 @@ class EntryInput extends HTMLElement {
     }
     if (text.startsWith("http://") || text.startsWith("https://")) {
       this.status = 'pending';
-      this.result = { url: text, type: 'link', comment: this.comment };
+      this.result = { text: text, type: 'link', comment: this.comment };
       await this.setUrlInfo(text);
       return;
     }
@@ -262,12 +260,12 @@ class EntryInput extends HTMLElement {
       return html`<tag-small type="link">Link</tag-small>
                   <small>getting URL info...</small>`;
     }
-    if (this.result.type === 'link' && this.status === 'complete') {
+    if (this.result.type === 'link') {
       return html`<tag-small type="link">Link</tag-small>
                   <tag-small type="linkinfo">${this.result.info}</tag-small>
                   <small>Title: <span id="linktitle">${this.result.title}</span></small>`;
     }
-    if (this.result.type === 'brokenlink' && this.status === 'complete') {
+    if (this.result.type === 'brokenlink') {
       return html`<tag-small type="link">Link</tag-small>
                   <tag-small type="brokenlink">${this.result.info}</tag-small>
                   <small>${this.result.title}</small>`;
@@ -277,25 +275,15 @@ class EntryInput extends HTMLElement {
     return html`<small>Autodetect<small>`;
   }
   update() {
-    const commentClasses = { active: (this.result.type === 'link' ||
-      this.result.type === 'brokenlink') || (this.result.type === 'image') };
-    let loadtext = "";
-    let loadcomment = "";
-    if (this.oldEntry.type === 'note') loadtext = this.oldEntry.text;
-    else if (this.oldEntry.type === 'link' || this.oldEntry.type === 'brokenlink') {
-      loadtext = this.oldEntry.url;
-      loadcomment = this.oldEntry.comment;
-    }
-    else if (this.oldEntry.type === 'image') {
-      loadtext = this.oldEntry.text;
-      loadcomment = this.oldEntry.comment;
-    }
+    let showComment = false;
+    if (this.result.type === 'link' || this.result.type === 'brokenlink' ||
+      this.result.type === 'image') showComment = true;
     render(html`${style}
       <div id="inputArea">
         <textarea-input id="entry-text" rows=${this.rows} cols=${this.cols}
                         @input=${(e)=>this.triggerDetect(e.target.value)}
                         placeholder=${this.placeholder}
-                        loadtext=${loadtext}>
+                        loadtext=${this.initialText}>
         </textarea-input>
         <upload-images @addimage=${(e)=>this.addImage(e.detail)}
                        @removeimage=${(e)=>this.removeImage(e.detail)}>
@@ -304,13 +292,13 @@ class EntryInput extends HTMLElement {
       <div id="typeDetectionBox">
         <small id="typeDetection">Type: </small>${this.getTypeDetect()}
       </div>
-      <text-input id="comment" size="25" class=${classMap(commentClasses)}
-                  @input=${(e)=>{this.comment = e.target.value.trim()}}
-                  placeholder="Add a comment..."
-                  loadtext=${loadcomment}></text-input>
-      `,
-      this.shadowRoot);
-      /* @updateimage=${(e)=>this.updateImage(e.detail)} */
+      ${ showComment ? html`
+        <text-input id="comment" size="25"
+                    @input=${(e)=>{this.comment = e.target.value.trim()}}
+                    placeholder="Add a comment..."
+                    loadtext=${this.comment}></text-input>
+        ` : html`` }
+    `, this.shadowRoot);
   }
 }
 

@@ -116,8 +116,11 @@ class EntryContent extends HTMLElement {
     if (this.entry.type === 'link' || this.entry.type === 'brokenlink') {
       return html`
         <div id="linkbox">
-          <small><a href=${this.entry.url}><span id="clickspan"
-            ></span>${this.entry.url}</a></small>
+          <small>
+            <a href=${this.entry.text} target="_blank">
+              <span id="clickspan"></span>${this.entry.text}
+            </a>
+          </small>
           <!--<small id="linkinfo">${this.entry.info}</small>-->
           <p id="linktitle">${this.entry.title}</p>
           ${ this.entry.comment !== "" ? html`<small id="linkcomment"

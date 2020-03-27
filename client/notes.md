@@ -10,7 +10,9 @@
 
 ### Current
 
-* editing link and saving leads to empty text
+* editing link and saving leads to empty text !! => WIP
+* lock add images for links
+* link display XSS? check
 * checkbox click on label triggers event but not checkmark
 
 ### Features
