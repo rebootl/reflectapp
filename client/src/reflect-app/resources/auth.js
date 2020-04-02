@@ -42,6 +42,7 @@ export async function login(username, pw) {
     // store JWT
     localStorage.setItem('access_token', login_resp.token);
     localStorage.setItem('username', username);
+    api.headers = {'Authorization':  'Bearer ' + login_resp.token};
     await api.reset();
     return true;
   }
@@ -52,5 +53,6 @@ export async function logout() {
   localStorage.removeItem('access_token');
   // delete locally stored images
   imagestore.cleanupLocalStorage();
+  api.headers = {};
   await api.reset();
 }
