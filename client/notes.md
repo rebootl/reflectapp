@@ -10,10 +10,7 @@
 
 ### Current
 
-* editing link and saving leads to empty text !! => WIP
 * lock add images for links
-* link display XSS? check
-* checkbox click on label triggers event but not checkmark
 
 ### Features
 
@@ -38,21 +35,18 @@
 
 ### Bugs / code cleanup
 
-* edit looses image comment sometimes!!?
-* make input-detection it's own component
 * source doesn't get updated -> projectData
-* setting inspector localapi doesn't work?
-* wired link title is not correctly parsed...
-* stuck on loading... on ffox, unclear why... had to reset ffox...
-* improve checkbox element
-* projectdata not loading on ffox mobile -> transpile maybe?
+* wired link title is not correctly parsed -> multiple title elements, use regex?
+* checkbox click on label triggers event but not checkmark -> do on design rework
+* setting inspector localapi doesn't work -> ?
+* make input-detection it's own component
+* projectdata not loading on ffox mobile -> projectData, transpile maybe?
 * improve client filestructure (make subdirectories for components)
 * cleanups
   - cleanup console logs, more cleanups?
   - cleanup function naming (camelCase)
   - use connectedCallback for all elements
-* make "input-overlay" it's own component => DONE, selection-box comp.
-  - use in menu
+* use selection-box comp. in menu
 * router
   - don't update from router if url doesn't effectively changed
   - update url inside router
@@ -75,6 +69,9 @@
 
 ### Done
 
+* make "input-overlay" it's own component => DONE
+* edit looses image comment sometimes!!? => FIXED
+* editing link and saving leads to empty text !! => FIXED
 * changing text and saving deletes image comment => FIXED
 * add images
   - if image locally not found, maybe on other device => DONE

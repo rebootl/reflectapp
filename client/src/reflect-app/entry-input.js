@@ -247,7 +247,8 @@ class EntryInput extends HTMLElement {
   }
   reset() {
     this.shadowRoot.querySelector('#entry-text').reset();
-    this.shadowRoot.querySelector('#comment').reset();
+    if (this.shadowRoot.querySelector('#comment'))
+      this.shadowRoot.querySelector('#comment').reset();
     this.status = 'initial';
     this.result = {};
   }
