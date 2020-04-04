@@ -44,6 +44,7 @@ const style = html`
 `;
 
 class UploadImages extends HTMLElement {
+  static get observedAttributes() {return ['disabled']}
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
@@ -55,6 +56,9 @@ class UploadImages extends HTMLElement {
     this.uploadResult = {};
   }
   connectedCallback() {
+    this.update();
+  }
+  attributeChangedCallback() {
     this.update();
   }
   async _loadImage(files) {
@@ -146,7 +150,8 @@ class UploadImages extends HTMLElement {
   }
   update() {
     render(html`${style}
-      <upload-button @change=${(e)=>this._loadImage(e.detail)}>
+      <upload-button ?disabled=${this.hasAttribute('disabled')}
+                     @change=${(e)=>this._loadImage(e.detail)}>
         Image(s)...
       </upload-button>
       ${ this.newImages.length > 0 ? html`

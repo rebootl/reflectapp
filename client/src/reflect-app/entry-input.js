@@ -1,5 +1,4 @@
 import { html, render } from 'lit-html';
-import { classMap } from 'lit-html/directives/class-map.js';
 import { apiGetRequest } from './resources/api_request_helpers.js';
 import { urlInfoUrl } from './resources/api-service.js';
 import { getAuthHeaderJSON } from './resources/auth.js';
@@ -276,9 +275,11 @@ class EntryInput extends HTMLElement {
     return html`<small>Autodetect<small>`;
   }
   update() {
-    let showComment = false;
-    if (this.result.type === 'link' || this.result.type === 'brokenlink' ||
-      this.result.type === 'image') showComment = true;
+    const showComment = (this.result.type === 'link' ||
+      this.result.type === 'brokenlink' ||
+      this.result.type === 'image') ? true : false;
+    const disableImageButton =  (this.result.type === 'link' ||
+      this.result.type === 'brokenlink') ? true : false;
     render(html`${style}
       <div id="inputArea">
         <textarea-input id="entry-text" rows=${this.rows} cols=${this.cols}
@@ -287,7 +288,8 @@ class EntryInput extends HTMLElement {
                         loadtext=${this.initialText}>
         </textarea-input>
         <upload-images @addimage=${(e)=>this.addImage(e.detail)}
-                       @removeimage=${(e)=>this.removeImage(e.detail)}>
+                       @removeimage=${(e)=>this.removeImage(e.detail)}
+                       ?disabled=${disableImageButton}>
         </upload-images>
       </div>
       <div id="typeDetectionBox">

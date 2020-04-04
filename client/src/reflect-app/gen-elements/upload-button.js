@@ -28,7 +28,7 @@ const style = html`
     label:focus {
       border: 2px solid var(--focus);
     }
-    label:disabled {
+    label[disabled] {
       color: var(--light-text-low-emph);
       cursor: auto;
     }
@@ -40,6 +40,7 @@ const style = html`
 `;
 
 class UploadButton extends HTMLElement {
+  static get observedAttributes() { return ['disabled'] }
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
@@ -55,9 +56,12 @@ class UploadButton extends HTMLElement {
   }
   update() {
     render(html`${style}
-        <label>
-          <input @change=${(e)=>this.change(e.target)} type="file"
-            accept="image/*" multiple>
+        <label ?disabled=${this.hasAttribute('disabled')}>
+          <input @change=${(e)=>this.change(e.target)}
+                 type="file"
+                 accept="image/*"
+                 multiple
+                 ?disabled=${this.hasAttribute('disabled')}>
           <span><slot /></span>
         </label>
         `
