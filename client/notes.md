@@ -13,11 +13,11 @@
 
 ### Features
 
+* JWT expiry/renewal
 * back button for single entry view
 * syntax highlighting
 * edit preview
 * search
-* JWT expiry/renewal
 * multi-user/platform POG
 * hide/show menu -> CSS rework
 * show synced status (using entry property)

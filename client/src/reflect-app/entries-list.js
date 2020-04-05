@@ -20,6 +20,9 @@ const style = html`
     a {
       text-decoration: none;
     }
+    #bottomOfList {
+      height: 50px;
+    }
   </style>
 `;
 
@@ -28,9 +31,16 @@ class EntriesList extends HTMLElement {
     super();
     this.attachShadow({mode: 'open'});
     this.entries = api.observe('entries');
+    this.limit = 0;
   }
   connectedCallback() {
-    this.update()
+    this.update();
+    const bottomObserver = new IntersectionObserver(
+      (e)=>this.loadMoreContent(e),
+      { threshold: 0.9 }
+    );
+    const el = this.shadowRoot.querySelector('#bottomOfList');
+    bottomObserver.observe(el);
   }
   triggerUpdate(urlStateObject) {
     console.log('updating entries-list...');
@@ -39,10 +49,17 @@ class EntriesList extends HTMLElement {
     this.activeTags = params.subtags || [];
     this.updateQuery();
   }
+  loadMoreContent(entries) {
+    if (entries[0].intersectionRatio <= 0) return;
+    console.log("increasing entry limit: ", this.limit);
+    this.limit += 3;
+    this.updateQuery();
+  }
   updateQuery() {
     if (this.activeTopics < 1) {
       this.entries.query([
-        {$sort: { pinned: -1, date: -1 }},
+        { $sort: { pinned: -1, date: -1 } },
+        { $limit: this.limit },
       ]);
     } else if (this.activeTags < 1) {
       this.entries.query([
@@ -50,6 +67,7 @@ class EntriesList extends HTMLElement {
           { topics: { $in: this.activeTopics } }
         ] } },
         { $sort: { pinned: -1, date: -1 }},
+        { $limit: this.limit },
       ]);
     } else {
       this.entries.query([
@@ -58,6 +76,7 @@ class EntriesList extends HTMLElement {
           { tags: { $in: this.activeTags } }
         ] } },
         { $sort: { pinned: -1, date: -1 }},
+        { $limit: this.limit },
       ]);
     }
   }
@@ -72,6 +91,7 @@ class EntriesList extends HTMLElement {
           html`<pre>loading...</pre>`
         )}
       </ul>
+      <div id="bottomOfList"></div>
       `,
       this.shadowRoot);
   }
