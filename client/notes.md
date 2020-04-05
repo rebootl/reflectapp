@@ -2,7 +2,6 @@
 
 * add entries (on prod.):
   - code examples
-* jwt renewal?
 * images access private protected by hash?
 * image upload "TypeError: NetworkError when attempting to fetch resource."
   when server offline
@@ -10,20 +9,19 @@
 
 ### Current
 
-* lock add images for links
+* pagination
 
 ### Features
 
-* pagination
 * back button for single entry view
 * syntax highlighting
-* show synced status (using entry property)
 * edit preview
 * search
+* JWT expiry/renewal
 * multi-user/platform POG
 * hide/show menu -> CSS rework
+* show synced status (using entry property)
 * online/offline indicator
-* protect url info request route -> maybe done?
 * early prevent creating duplicate tags inside add-items (would be nice)
 * maybe rework edit-input to "query" input instead
 * flash message after saving, message system?
@@ -35,10 +33,10 @@
 
 ### Bugs / code cleanup
 
-* source doesn't get updated -> projectData
+* setting inspector localapi doesn't work -> what was this?
 * wired link title is not correctly parsed -> multiple title elements, use regex?
+* cannot reload after unclean browser exit -> projectData -> make fix?
 * checkbox click on label triggers event but not checkmark -> do on design rework
-* setting inspector localapi doesn't work -> ?
 * make input-detection it's own component
 * projectdata not loading on ffox mobile -> projectData, transpile maybe?
 * improve client filestructure (make subdirectories for components)
@@ -64,11 +62,16 @@
 
 ### Test in production LUL
 
-* re-login necessary after server update,
-  otherwise new entries/edits not shown => CONFIRM, didn't happen again..
 
 ### Done
 
+* protect url info request route => DONE
+* source doesn't get updated => UNCLEAR -> what was this?
+* re-login necessary after server update,
+  otherwise new entries/edits not shown => DUPLICATE
+  -> more likely after browser crash/unclean exit
+  -> see other issue
+* lock add images for links => DONE
 * make "input-overlay" it's own component => DONE
 * edit looses image comment sometimes!!? => FIXED
 * editing link and saving leads to empty text !! => FIXED
