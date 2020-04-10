@@ -6,6 +6,8 @@
 * image upload "TypeError: NetworkError when attempting to fetch resource."
   when server offline
 * tests?
+* naming conventions css?
+* make everything async?
 
 ### Current
 

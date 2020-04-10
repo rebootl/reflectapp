@@ -20,9 +20,6 @@ const style = html`
     a {
       text-decoration: none;
     }
-    #bottomOfList {
-      height: 50px;
-    }
   </style>
 `;
 
@@ -31,38 +28,61 @@ class EntriesList extends HTMLElement {
     super();
     this.attachShadow({mode: 'open'});
     this.entries = api.observe('entries');
-    this.limit = 0;
+    this.defaultLimit = 5;
+    this.limit = this.defaultLimit;
   }
   connectedCallback() {
     this.update();
-    const bottomObserver = new IntersectionObserver(
-      (e)=>this.loadMoreContent(e),
-      { threshold: 0.9 }
+    this.bottomObserver = new IntersectionObserver((e)=>this._loadContent(e),
+      { threshold: 0.1 }
     );
-    const el = this.shadowRoot.querySelector('#bottomOfList');
-    bottomObserver.observe(el);
+    const topObserver = new IntersectionObserver((e)=>this._resetLimit(e));
+    const el = this.shadowRoot.querySelector('#beforeList');
+    // this should trigger _loadContent
+    topObserver.observe(el);
   }
   triggerUpdate(urlStateObject) {
     console.log('updating entries-list...');
     const params = urlStateObject.params;
     this.activeTopics = params.topics || [];
     this.activeTags = params.subtags || [];
-    this.updateQuery();
+    this._resetLimit([{intersectionRatio: 1}]);
   }
-  loadMoreContent(entries) {
+  _resetLimit(entries) {
     if (entries[0].intersectionRatio <= 0) return;
-    console.log("increasing entry limit: ", this.limit);
-    this.limit += 3;
-    this.updateQuery();
+    this.limit = this.defaultLimit;
+    this._updateQuery();
+    this._loadContent([{intersectionRatio: 1}]);
   }
-  updateQuery() {
+  _addObserver() {
+    const ul = this.shadowRoot.querySelector('ul');
+    const lastli = ul.lastElementChild;
+    lastli.classList.add('lastelement')
+    this.bottomObserver.observe(lastli);
+  }
+  _removeObserver() {
+    const ul = this.shadowRoot.querySelector('ul');
+    const lastli = ul.lastElementChild;
+    if (lastli.classList.contains('lastelement')) return;
+    lastli.classList.remove('lastelement')
+    this.bottomObserver.unobserve(lastli);
+  }
+  async _loadContent(entries) {
+    if (entries[0].intersectionRatio <= 0) return;
+    this._removeObserver()
+    this.limit += 3;
+    await this._updateQuery();
+    // give some time to render
+    setTimeout(()=>this._addObserver(), 50);
+  }
+  async _updateQuery() {
     if (this.activeTopics < 1) {
-      this.entries.query([
+      await this.entries.query([
         { $sort: { pinned: -1, date: -1 } },
         { $limit: this.limit },
       ]);
     } else if (this.activeTags < 1) {
-      this.entries.query([
+      await this.entries.query([
         { $match: { $and: [
           { topics: { $in: this.activeTopics } }
         ] } },
@@ -70,7 +90,7 @@ class EntriesList extends HTMLElement {
         { $limit: this.limit },
       ]);
     } else {
-      this.entries.query([
+      await this.entries.query([
         { $match: { $and: [
           { topics: { $in: this.activeTopics } },
           { tags: { $in: this.activeTags } }
@@ -82,16 +102,16 @@ class EntriesList extends HTMLElement {
   }
   update() {
     render(html`${style}
+      <div id="beforeList"></div>
       <ul>
       ${observableList(
           this.entries,
           (v, i) => html`
             <li><a href="#entry?id=${v.id}"><entry-item .entry=${v}></entry-item></a></li>
-          `,
-          html`<pre>loading...</pre>`
-        )}
+          `, html`
+            <pre>loading...</pre>
+          `)}
       </ul>
-      <div id="bottomOfList"></div>
       `,
       this.shadowRoot);
   }
