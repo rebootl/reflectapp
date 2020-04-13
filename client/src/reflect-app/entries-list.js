@@ -20,6 +20,9 @@ const style = html`
     a {
       text-decoration: none;
     }
+    #belowList {
+      height: 50px;
+    }
   </style>
 `;
 
@@ -73,7 +76,7 @@ class EntriesList extends HTMLElement {
     this.limit += 3;
     await this._updateQuery();
     // give some time to render
-    setTimeout(()=>this._addObserver(), 50);
+    setTimeout(()=>this._addObserver(), 250);
   }
   async _updateQuery() {
     if (this.activeTopics < 1) {
@@ -112,6 +115,8 @@ class EntriesList extends HTMLElement {
             <pre>loading...</pre>
           `)}
       </ul>
+      <div @click=${()=>this._loadContent([{intersectionRatio: 1}])}
+           id="belowList"></div>
       `,
       this.shadowRoot);
   }
