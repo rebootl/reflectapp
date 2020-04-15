@@ -31,7 +31,7 @@ class EntriesList extends HTMLElement {
     super();
     this.attachShadow({mode: 'open'});
     this.entries = api.observe('entries');
-    this.defaultLimit = 5;
+    this.defaultLimit = 1;
     this.limit = this.defaultLimit;
   }
   connectedCallback() {
@@ -43,6 +43,10 @@ class EntriesList extends HTMLElement {
     const el = this.shadowRoot.querySelector('#beforeList');
     // this should trigger _loadContent
     topObserver.observe(el);
+    const ulMutationObserver = new MutationObserver((m, o)=>this._updateObserver(m, o));
+    const ul = this.shadowRoot.querySelector('ul');
+    ulMutationObserver.observe(ul, { childList: true });
+    //this._loadContent([{intersectionRatio: 1}]);
   }
   triggerUpdate(urlStateObject) {
     console.log('updating entries-list...');
@@ -51,13 +55,25 @@ class EntriesList extends HTMLElement {
     this.activeTags = params.subtags || [];
     this._resetLimit([{intersectionRatio: 1}]);
   }
+  _updateObserver(mutationsList, observer) {
+    /*const lastli = this.shadowRoot.querySelector('.lastelement');
+    console.log("lastli", lastli)
+    if (lastli) {
+      lastli.classList.remove('lastelement');
+      this.bottomObserver.unobserve(lastli);
+    }*/
+    const ul = this.shadowRoot.querySelector('ul');
+    const newLastli = ul.lastElementChild;
+    newLastli.classList.add('lastelement')
+    this.bottomObserver.observe(newLastli);
+  }
   _resetLimit(entries) {
     if (entries[0].intersectionRatio <= 0) return;
     this.limit = this.defaultLimit;
-    this._updateQuery();
+    //this._updateQuery();
     this._loadContent([{intersectionRatio: 1}]);
   }
-  _addObserver() {
+  /*_addObserver() {
     const ul = this.shadowRoot.querySelector('ul');
     const lastli = ul.lastElementChild;
     lastli.classList.add('lastelement')
@@ -69,23 +85,23 @@ class EntriesList extends HTMLElement {
     if (lastli.classList.contains('lastelement')) return;
     lastli.classList.remove('lastelement')
     this.bottomObserver.unobserve(lastli);
-  }
+  }*/
   async _loadContent(entries) {
-    if (entries[0].intersectionRatio <= 0) return;
-    this._removeObserver()
-    this.limit += 3;
-    await this._updateQuery();
-    // give some time to render
-    setTimeout(()=>this._addObserver(), 250);
+    //console.log(entries)
+    // in some cases the observable of the previous 'lastelement' is still
+    // threre, therefor the last entry has to be used instead of 0
+    if (entries[entries.length - 1].intersectionRatio <= 0) return;
+    this.limit += 1;
+    this._updateQuery();
   }
   async _updateQuery() {
     if (this.activeTopics < 1) {
-      await this.entries.query([
+      this.entries.query([
         { $sort: { pinned: -1, date: -1 } },
         { $limit: this.limit },
       ]);
     } else if (this.activeTags < 1) {
-      await this.entries.query([
+      this.entries.query([
         { $match: { $and: [
           { topics: { $in: this.activeTopics } }
         ] } },
@@ -93,7 +109,7 @@ class EntriesList extends HTMLElement {
         { $limit: this.limit },
       ]);
     } else {
-      await this.entries.query([
+      this.entries.query([
         { $match: { $and: [
           { topics: { $in: this.activeTopics } },
           { tags: { $in: this.activeTags } }

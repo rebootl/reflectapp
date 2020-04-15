@@ -12,6 +12,7 @@
 ### Current
 
 * pagination
+* direct link doesn't work when not logged in :((
 
 ### Features
 
