@@ -31,7 +31,7 @@ class EntriesList extends HTMLElement {
     super();
     this.attachShadow({mode: 'open'});
     this.entries = api.observe('entries');
-    this.defaultLimit = 1;
+    this.defaultLimit = 3;
     this.limit = this.defaultLimit;
   }
   connectedCallback() {
@@ -46,7 +46,6 @@ class EntriesList extends HTMLElement {
     const ulMutationObserver = new MutationObserver((m, o)=>this._updateObserver(m, o));
     const ul = this.shadowRoot.querySelector('ul');
     ulMutationObserver.observe(ul, { childList: true });
-    //this._loadContent([{intersectionRatio: 1}]);
   }
   triggerUpdate(urlStateObject) {
     console.log('updating entries-list...');
@@ -56,12 +55,6 @@ class EntriesList extends HTMLElement {
     this._resetLimit([{intersectionRatio: 1}]);
   }
   _updateObserver(mutationsList, observer) {
-    /*const lastli = this.shadowRoot.querySelector('.lastelement');
-    console.log("lastli", lastli)
-    if (lastli) {
-      lastli.classList.remove('lastelement');
-      this.bottomObserver.unobserve(lastli);
-    }*/
     const ul = this.shadowRoot.querySelector('ul');
     const newLastli = ul.lastElementChild;
     newLastli.classList.add('lastelement')
@@ -70,28 +63,13 @@ class EntriesList extends HTMLElement {
   _resetLimit(entries) {
     if (entries[0].intersectionRatio <= 0) return;
     this.limit = this.defaultLimit;
-    //this._updateQuery();
-    this._loadContent([{intersectionRatio: 1}]);
+    this._updateQuery();
   }
-  /*_addObserver() {
-    const ul = this.shadowRoot.querySelector('ul');
-    const lastli = ul.lastElementChild;
-    lastli.classList.add('lastelement')
-    this.bottomObserver.observe(lastli);
-  }
-  _removeObserver() {
-    const ul = this.shadowRoot.querySelector('ul');
-    const lastli = ul.lastElementChild;
-    if (lastli.classList.contains('lastelement')) return;
-    lastli.classList.remove('lastelement')
-    this.bottomObserver.unobserve(lastli);
-  }*/
   async _loadContent(entries) {
-    //console.log(entries)
     // in some cases the observable of the previous 'lastelement' is still
     // threre, therefor the last entry has to be used instead of 0
     if (entries[entries.length - 1].intersectionRatio <= 0) return;
-    this.limit += 1;
+    this.limit += 3;
     this._updateQuery();
   }
   async _updateQuery() {
