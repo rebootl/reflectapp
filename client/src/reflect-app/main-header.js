@@ -18,7 +18,8 @@ const style = html`
       margin-left: auto;
       margin-right: auto;
       display: block;
-      padding-top: 5px;
+      padding-top: 4px;
+      width: 38px;
     }
     user-menu {
       float: right;
@@ -37,7 +38,7 @@ class MainHeader extends HTMLElement {
       ${style}
       <div id="logo-box">
         <a href="#" title="Home">
-          <img id="logo" alt="Logo" src="/layout/logo.png">
+          <img id="logo" alt="Logo" src="/layout/reflect-logo.svg">
         </a>
       </div>
       <user-menu></user-menu>

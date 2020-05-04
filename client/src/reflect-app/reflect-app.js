@@ -79,9 +79,13 @@ const style = html`
       display: grid;
       grid-template-columns: 100%;
       grid-template-areas:
+        "header"
         "main-menu"
         "add-box"
         "main-content";
+    }
+    main-header {
+      grid-area: header;
     }
     main-menu {
       grid-area: main-menu;
@@ -99,6 +103,7 @@ const style = html`
         grid-template-columns: 230px auto;
         grid-template-rows: auto 1fr;
         grid-template-areas:
+          "header     header"
           "main-menu  main-content"
           "add-box    main-content";
         min-height: calc(100vh - 49px);
@@ -115,8 +120,9 @@ const style = html`
       /* 1130px + 12px scrollbar */
       #wrapper-container {
         grid-template-columns: 230px auto 230px;
-        grid-template-rows: auto;
+        grid-template-rows: 48px auto;
         grid-template-areas:
+          "header     header        header"
           "main-menu  main-content  add-box";
       }
       main-content {
@@ -150,8 +156,8 @@ class ReflectApp extends HTMLElement {
   }
   update() {
     render(html`${style}
-        <main-header></main-header>
         <div id="wrapper-container">
+          <main-header></main-header>
           <main-menu></main-menu>
           <div id="add-box"></div>
           <main-content></main-content>
