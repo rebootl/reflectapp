@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import compression from 'compression';
 import fs from 'fs';
 import path from 'path';
@@ -23,14 +22,7 @@ const mediaDir = 'media';
 // setup app
 
 const app = express();
-
-// this is needed for express-ws (projectData adaption, WIP?)
-// acc. to docs: const expressWs = require('express-ws')(app);
-// using esm:
-import expressWs from 'express-ws';
-expressWs(app);
-
-app.use(bodyParser.json({limit: '10mb', extended: true}));
+app.use(express.json({limit: '10mb', extended: true}));
 app.use(compression());
 app.use(expressJwt({
   secret: secret,

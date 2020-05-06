@@ -11,8 +11,8 @@
 
 ### Current
 
-* pagination
-* direct link doesn't work when not logged in :((
+* direct link doesn't work when not logged in :( !!
+* "TypeError: newLastli is null" on login/logout
 
 ### Features
 
@@ -68,6 +68,7 @@
 
 ### Done
 
+* pagination => DONE
 * protect url info request route => DONE
 * source doesn't get updated => UNCLEAR -> what was this?
 * re-login necessary after server update,
