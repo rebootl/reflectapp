@@ -11,8 +11,10 @@
 
 ### Current
 
-* direct link doesn't work when not logged in :( !!
-* "TypeError: newLastli is null" on login/logout
+* multi-user/platform POG
+  - use a real database instead of a JSON file (mongoDB)
+* direct link doesn't work when not logged in -> hard to debug, projectData-client issue
+* "TypeError: newLastli is null" on login/logout -> reproduce
 
 ### Features
 
@@ -21,7 +23,6 @@
 * syntax highlighting
 * edit preview
 * search
-* multi-user/platform POG
 * hide/show menu -> CSS rework
 * show synced status (using entry property)
 * online/offline indicator
@@ -37,8 +38,6 @@
 ### Bugs / code cleanup
 
 * setting inspector localapi doesn't work -> what was this?
-* wired link title is not correctly parsed -> multiple title elements, use regex?
-* cannot reload after unclean browser exit -> projectData -> make fix?
 * checkbox click on label triggers event but not checkmark -> do on design rework
 * make input-detection it's own component
 * projectdata not loading on ffox mobile -> projectData, transpile maybe?
@@ -65,9 +64,11 @@
 
 ### Test in production LUL
 
+* cannot reload after unclean browser exit -> should be fixed by projectData-client update
 
 ### Done
 
+* wired link title is not correctly parsed => FIXED
 * pagination => DONE
 * protect url info request route => DONE
 * source doesn't get updated => UNCLEAR -> what was this?

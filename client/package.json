@@ -1,14 +1,14 @@
 {
   "name": "reflect-client-app",
   "devDependencies": {
-    "rollup": "^2.8.0",
+    "rollup": "^2.10.2",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-terser": "^5.3.0"
   },
   "dependencies": {
-    "@lsys/projectData-client": "git+https://git.lsys.ac/luca/projectData-client",
+    "@lsys/projectData-client": "git+https://git.lsys.ac/luca/projectData-client#rebootl-does-things",
     "compressorjs": "^1.0.6",
     "lit-html": "^1.2.1",
     "moment": "^2.25.3"
