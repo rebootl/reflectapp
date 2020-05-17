@@ -7,7 +7,7 @@ import expressJwt from 'express-jwt';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import request from 'request'; // for url info request
-import cheerio from 'cheerio'; // html parsing
+import HTMLParser from 'node-html-parser';
 import fileupload from 'express-fileupload';
 import Endpoint from '@lsys/projectData/esm/Endpoint';
 import { CustomQuery } from '@lsys/projectData/esm/Misc/Custom';
@@ -141,8 +141,8 @@ app.get('/api/urlinfo', (req, res) => {
       return;
     }
     const contentType = response.headers['content-type'];
-    const c = cheerio.load(response.body);
-    const title = c('title').text();
+    const root = HTMLParser.parse(response.body);
+    const title = root.querySelector('title').text;
     res.send({
       success: true,
       contentType: contentType,
