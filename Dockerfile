@@ -18,6 +18,7 @@ RUN cd client && npm run build
 
 # install server
 COPY main.js ./
+COPY imageStorage.js ./
 COPY config.js_prod ./config.js
 COPY db ./db
 ENV NODE_ENV=production
