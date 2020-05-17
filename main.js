@@ -1,16 +1,19 @@
 import express from 'express';
 import compression from 'compression';
 import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
 import expressJwt from 'express-jwt';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import request from 'request'; // for url info request
 import HTMLParser from 'node-html-parser';
 import fileupload from 'express-fileupload';
+
+// projectData
 import Endpoint from '@lsys/projectData/esm/Endpoint';
 import { CustomQuery } from '@lsys/projectData/esm/Misc/Custom';
+
+// own imports
+import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
 import { port, secret, user } from './config.js';
 
 // files/paths
@@ -45,54 +48,6 @@ const writeData = () => {
   const str = JSON.stringify(data);
   fs.writeFileSync(dataFile, str);
 };
-
-// setup image storage
-
-function storeImage(i) {
-  return new Promise((res, rej) => {
-    const randomDirName = crypto.randomBytes(20).toString('hex');
-    const imagepath = path.join(staticDir, mediaDir, randomDirName, i.name);
-    console.log('saving image: ', imagepath);
-    i.mv(imagepath, (err) => {
-      if (err) rej(err);
-      res({
-        originalname: i.name,
-        path: imagepath.replace(staticDir, ''),
-        size: i.size
-      });
-    });
-  });
-}
-
-function deleteImage(image) {
-  if (!image.uploaded) return image;
-  if (!image.filepath) {
-    console.log("image has no filepath argument, returning");
-    return image;
-  }
-  const fp = path.join(staticDir, image.filepath);
-  fs.unlink(fp, (err) => {
-    if (err) console.log('error deleting image:', err);
-    console.log('deleted image', fp);
-    fs.rmdir(path.dirname(fp), (err) => {
-      if (err) console.log('error removing directory: ', err);
-      console.log('directory removed:', path.dirname(fp));
-    });
-  });
-}
-
-function handleUpdateImages(newImages, oldImages) {
-  // compare new/old ids, delete removed images
-  const newIds = newImages.map((e)=>e.filename);
-  const oldIds = oldImages.map((e)=>e.filename);
-  for (const oldId of oldIds) {
-    if (!newIds.includes(oldId)) {
-      for (const image of oldImages) {
-        if (image.filename === oldId) deleteImage(image);
-      }
-    }
-  }
-}
 
 // login / jwt stuff
 
@@ -165,9 +120,9 @@ app.post('/api/uploadMultiImages', async (req, res) => {
   let files = [];
   const filedata = req.files.filedata;
   if (Array.isArray(filedata)) {
-    files = await Promise.all(filedata.map(async (f) => await storeImage(f)));
+    files = await Promise.all(filedata.map(async (f) => await storeImage(f, staticDir, mediaDir)));
   } else {
-    files.push(await storeImage(filedata));
+    files.push(await storeImage(filedata, staticDir, mediaDir));
   }
   //console.log(files)
   res.send({
@@ -196,10 +151,11 @@ app.use('/api/entries', new Endpoint({
   },
   delete: async (obj, req) => {
     if (!req.user) return;
+    console.log("DELETE");
     // backwards compat.
     if (obj.images) {
       for (const image of obj.images) {
-        deleteImage(image);
+        deleteImage(image, staticDir);
       }
     }
     data = data.filter((v) => v.id !== obj.id);
