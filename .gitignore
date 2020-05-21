@@ -1,5 +1,12 @@
-client/node_modules/
-client/dist/
-node_modules/
-db.json
-config.json_prod
+# client
+app/client/node_modules/
+app/client/dist/
+
+# server
+app/node_modules/
+app/dist/
+app/db/db.json
+app/config.json_prod
+
+# db
+mongodb-data/
