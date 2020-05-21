@@ -4,31 +4,31 @@ import fs from 'fs';
 import expressJwt from 'express-jwt';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import request from 'request'; // for url info request
-import HTMLParser from 'node-html-parser';
 import fileupload from 'express-fileupload';
+// for url info request
+import request from 'request';
+import HTMLParser from 'node-html-parser';
+// image handling
+//import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 
 // projectData
 import Endpoint from '@lsys/projectData/esm/Endpoint';
 import { CustomQuery } from '@lsys/projectData/esm/Misc/Custom';
+import { MongoDatabase, MongoDBQuery } from '@lsys/projectData/esm/Misc/MongoDB';
 
 // own imports
-import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
-import { port, secret, user } from './config.js';
-
-// files/paths
-const dataFile = 'db/db.json';
-const staticDir = 'client/dist';
-// (mediaDir is below staticDir)
-const mediaDir = 'media';
+//import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
+import * as config from '../config.js';
 
 // setup app
 
 const app = express();
-app.use(express.json({limit: '10mb', extended: true}));
+app.use(express.json({limit: '10mb'}));
 app.use(compression());
 app.use(expressJwt({
-  secret: secret,
+  secret: config.secret,
   credentialsRequired: false
 }));
 app.use(fileupload({
@@ -36,17 +36,17 @@ app.use(fileupload({
 }));
 
 // static files (incl. client)
-app.use('/', express.static(staticDir,));
+app.use('/', express.static(config.staticDir,));
 
 // persistent storage
 
 // load data
-let data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
+let data = JSON.parse(fs.readFileSync(config.dataFile, 'utf8'));
 
 // write data
 const writeData = () => {
   const str = JSON.stringify(data);
-  fs.writeFileSync(dataFile, str);
+  fs.writeFileSync(config.dataFile, str);
 };
 
 // login / jwt stuff
@@ -54,18 +54,66 @@ const writeData = () => {
 function createToken() {
   // sign with default (HMAC SHA256)
   //let expirationDate =  Math.floor(Date.now() / 1000) + 30 //30 seconds from now
-  var token = jwt.sign({ user: user.name }, secret);
+  var token = jwt.sign({ user: config.user.name }, config.secret);
   return token;
+}
+
+// setup image storage
+
+function storeImage(i) {
+  return new Promise((res, rej) => {
+    const randomDirName = crypto.randomBytes(20).toString('hex');
+    const imagepath = path.join(config.staticDir, config.mediaDir, randomDirName, i.name);
+    console.log('saving image: ', imagepath);
+    i.mv(imagepath, (err) => {
+      if (err) rej(err);
+      res({
+        originalname: i.name,
+        path: imagepath.replace(config.staticDir, ''),
+        size: i.size
+      });
+    });
+  });
+}
+
+function deleteImage(image) {
+  if (!image.uploaded) return image;
+  if (!image.filepath) {
+    console.log("image has no filepath argument, returning");
+    return image;
+  }
+  const fp = path.join(config.staticDir, image.filepath);
+  fs.unlink(fp, (err) => {
+    if (err) console.log('error deleting image:', err);
+    console.log('deleted image', fp);
+    fs.rmdir(path.dirname(fp), (err) => {
+      if (err) console.log('error removing directory: ', err);
+      console.log('directory removed:', path.dirname(fp));
+    });
+  });
+}
+
+function handleUpdateImages(newImages, oldImages) {
+  // compare new/old ids, delete removed images
+  const newIds = newImages.map((e)=>e.filename);
+  const oldIds = oldImages.map((e)=>e.filename);
+  for (const oldId of oldIds) {
+    if (!newIds.includes(oldId)) {
+      for (const image of oldImages) {
+        if (image.filename === oldId) deleteImage(image);
+      }
+    }
+  }
 }
 
 // routes
 
 app.post('/api/login', (req, res) => {
-  if (req.body.username !== user.name) {
+  if (req.body.username !== config.user.name) {
     res.sendStatus(401);
     return;
   }
-  bcrypt.compare(req.body.password, user.pwhash).then((check) => {
+  bcrypt.compare(req.body.password, config.user.pwhash).then((check) => {
     if (check) {
       console.log("login ok");
       res.send({
@@ -120,9 +168,9 @@ app.post('/api/uploadMultiImages', async (req, res) => {
   let files = [];
   const filedata = req.files.filedata;
   if (Array.isArray(filedata)) {
-    files = await Promise.all(filedata.map(async (f) => await storeImage(f, staticDir, mediaDir)));
+    files = await Promise.all(filedata.map(async (f) => await storeImage(f)));
   } else {
-    files.push(await storeImage(filedata, staticDir, mediaDir));
+    files.push(await storeImage(filedata));
   }
   //console.log(files)
   res.send({
@@ -155,7 +203,7 @@ app.use('/api/entries', new Endpoint({
     // backwards compat.
     if (obj.images) {
       for (const image of obj.images) {
-        deleteImage(image, staticDir);
+        deleteImage(image);
       }
     }
     data = data.filter((v) => v.id !== obj.id);
@@ -176,5 +224,5 @@ app.use('/api/entries', new Endpoint({
   }
 }).router);
 
-app.listen(port);
-console.log('listening on ' + port);
+app.listen(config.port);
+console.log('listening on ' + config.port);

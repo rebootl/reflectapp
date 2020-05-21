@@ -37,14 +37,14 @@ export function deleteImage(image, staticDir) {
   });
 }
 
-export function handleUpdateImages(newImages, oldImages) {
+export function handleUpdateImages(newImages, oldImages, staticDir) {
   // compare new/old ids, delete removed images
   const newIds = newImages.map((e)=>e.filename);
   const oldIds = oldImages.map((e)=>e.filename);
   for (const oldId of oldIds) {
     if (!newIds.includes(oldId)) {
       for (const image of oldImages) {
-        if (image.filename === oldId) deleteImage(image);
+        if (image.filename === oldId) deleteImage(image, staticDir);
       }
     }
   }
