@@ -12,8 +12,8 @@ import HTMLParser from 'node-html-parser';
 import Endpoint from '@lsys/projectData/esm/Endpoint';
 import { CustomQuery } from '@lsys/projectData/esm/Misc/Custom';
 // own imports
-import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
 import * as config from '../config.js';
+import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
 // setup app
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -62,6 +62,7 @@ app.post('/api/login', (req, res) => {
         }
     });
 });
+const htmlParser = HTMLParser;
 app.get('/api/urlinfo', (req, res) => {
     if (!req.user) {
         console.log('unallowed urlinfo request rejected');
@@ -79,7 +80,7 @@ app.get('/api/urlinfo', (req, res) => {
             return;
         }
         const contentType = response.headers['content-type'];
-        const root = HTMLParser.parse(response.body);
+        const root = htmlParser.parse(response.body);
         const title = root.querySelector('title').text;
         res.send({
             success: true,

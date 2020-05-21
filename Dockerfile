@@ -17,8 +17,10 @@ COPY client/rollup.config.js ./client/
 RUN cd client && npm run build
 
 # install server
-COPY main.js ./
 COPY config.js_prod ./config.js
+COPY src ./src
+COPY tsconfig.json ./tsconfig.json
+RUN npm run build
 COPY db ./db
 ENV NODE_ENV=production
 

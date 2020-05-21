@@ -6,8 +6,8 @@ import { staticDir, mediaDir } from '../config.js';
 
 // setup image storage
 
-export function storeImage(i) {
-  return new Promise((res, rej) => {
+export function storeImage(i : any) : Promise<any> {
+  return new Promise<any>((res, rej) => {
     const randomDirName = crypto.randomBytes(20).toString('hex');
     const imagepath = path.join(staticDir, mediaDir, randomDirName, i.name);
     console.log('saving image: ', imagepath);
@@ -22,7 +22,7 @@ export function storeImage(i) {
   });
 }
 
-export function deleteImage(image) {
+export function deleteImage(image : any) : any | void {
   if (!image.uploaded) return image;
   if (!image.filepath) {
     console.log("image has no filepath argument, returning");
@@ -39,7 +39,7 @@ export function deleteImage(image) {
   });
 }
 
-export function handleUpdateImages(newImages, oldImages) {
+export function handleUpdateImages(newImages : any, oldImages : any) : void {
   // compare new/old ids, delete removed images
   const newIds = newImages.map((e)=>e.filename);
   const oldIds = oldImages.map((e)=>e.filename);

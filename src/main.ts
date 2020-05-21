@@ -40,14 +40,14 @@ app.use('/', express.static(config.staticDir,));
 let data = JSON.parse(fs.readFileSync(config.dataFile, 'utf8'));
 
 // write data
-const writeData = () => {
+const writeData = () : void => {
   const str = JSON.stringify(data);
   fs.writeFileSync(config.dataFile, str);
 };
 
 // login / jwt stuff
 
-function createToken() {
+function createToken() : string {
   // sign with default (HMAC SHA256)
   //let expirationDate =  Math.floor(Date.now() / 1000) + 30 //30 seconds from now
   var token = jwt.sign({ user: config.user.name }, config.secret);
@@ -56,7 +56,7 @@ function createToken() {
 
 // routes
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', (req : any, res : any) => {
   if (req.body.username !== config.user.name) {
     res.sendStatus(401);
     return;
@@ -75,7 +75,9 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-app.get('/api/urlinfo', (req, res) => {
+const htmlParser : any = HTMLParser;
+
+app.get('/api/urlinfo', (req : any, res : any) => {
   if (!req.user) {
     console.log('unallowed urlinfo request rejected');
     res.sendStatus(401);
@@ -92,7 +94,7 @@ app.get('/api/urlinfo', (req, res) => {
       return;
     }
     const contentType = response.headers['content-type'];
-    const root = HTMLParser.parse(response.body);
+    const root = htmlParser.parse(response.body);
     const title = root.querySelector('title').text;
     res.send({
       success: true,
@@ -103,7 +105,7 @@ app.get('/api/urlinfo', (req, res) => {
   });
 });
 
-app.post('/api/uploadMultiImages', async (req, res) => {
+app.post('/api/uploadMultiImages', async (req : any, res : any) => {
   if (!req.user) {
     console.log('unallowed image upload rejected');
     res.sendStatus(401);
@@ -131,21 +133,21 @@ app.post('/api/uploadMultiImages', async (req, res) => {
 
 app.use('/api/entries', new Endpoint({
   query: new CustomQuery({ update: ()=>data }),
-  id: (e) => e.id,
-  filter: (e, req) => {
+  id: (e : any) => e.id,
+  filter: (e : any, req : any) => {
     if (e.private) {
       if (req.user) return e;
       else return;
     }
     return e;
   },
-  add: async (obj, req) => {
+  add: async (obj : any, req : any) => {
     console.log("add entry user: ", req.user);
     if (!req.user) return;
     data.push(obj);
     writeData();
   },
-  delete: async (obj, req) => {
+  delete: async (obj : any, req : any) => {
     if (!req.user) return;
     console.log("DELETE");
     // backwards compat.
@@ -157,7 +159,7 @@ app.use('/api/entries', new Endpoint({
     data = data.filter((v) => v.id !== obj.id);
     writeData();
   },
-  update: async (newObj, oldObj, req) => {
+  update: async (newObj : any, oldObj : any, req : any) => {
     if (!req.user) return;
     console.log("UPDATE");
     // remove old entry
