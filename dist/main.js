@@ -8,15 +8,11 @@ import fileupload from 'express-fileupload';
 // for url info request
 import request from 'request';
 import HTMLParser from 'node-html-parser';
-// image handling
-//import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
 // projectData
 import Endpoint from '@lsys/projectData/esm/Endpoint';
 import { CustomQuery } from '@lsys/projectData/esm/Misc/Custom';
 // own imports
-//import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
+import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
 import * as config from '../config.js';
 // setup app
 const app = express();
@@ -45,55 +41,6 @@ function createToken() {
     //let expirationDate =  Math.floor(Date.now() / 1000) + 30 //30 seconds from now
     var token = jwt.sign({ user: config.user.name }, config.secret);
     return token;
-}
-// setup image storage
-function storeImage(i) {
-    return new Promise((res, rej) => {
-        const randomDirName = crypto.randomBytes(20).toString('hex');
-        const imagepath = path.join(config.staticDir, config.mediaDir, randomDirName, i.name);
-        console.log('saving image: ', imagepath);
-        i.mv(imagepath, (err) => {
-            if (err)
-                rej(err);
-            res({
-                originalname: i.name,
-                path: imagepath.replace(config.staticDir, ''),
-                size: i.size
-            });
-        });
-    });
-}
-function deleteImage(image) {
-    if (!image.uploaded)
-        return image;
-    if (!image.filepath) {
-        console.log("image has no filepath argument, returning");
-        return image;
-    }
-    const fp = path.join(config.staticDir, image.filepath);
-    fs.unlink(fp, (err) => {
-        if (err)
-            console.log('error deleting image:', err);
-        console.log('deleted image', fp);
-        fs.rmdir(path.dirname(fp), (err) => {
-            if (err)
-                console.log('error removing directory: ', err);
-            console.log('directory removed:', path.dirname(fp));
-        });
-    });
-}
-function handleUpdateImages(newImages, oldImages) {
-    // compare new/old ids, delete removed images
-    const newIds = newImages.map((e) => e.filename);
-    const oldIds = oldImages.map((e) => e.filename);
-    for (const oldId of oldIds) {
-        if (!newIds.includes(oldId)) {
-            for (const image of oldImages) {
-                if (image.filename === oldId)
-                    deleteImage(image);
-            }
-        }
-    }
 }
 // routes
 app.post('/api/login', (req, res) => {

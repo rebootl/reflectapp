@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { staticDir, mediaDir } from '../config.js';
 // setup image storage
-export function storeImage(i, staticDir, mediaDir) {
+export function storeImage(i) {
     return new Promise((res, rej) => {
         const randomDirName = crypto.randomBytes(20).toString('hex');
         const imagepath = path.join(staticDir, mediaDir, randomDirName, i.name);
@@ -18,7 +19,7 @@ export function storeImage(i, staticDir, mediaDir) {
         });
     });
 }
-export function deleteImage(image, staticDir) {
+export function deleteImage(image) {
     if (!image.uploaded)
         return image;
     if (!image.filepath) {
@@ -37,7 +38,7 @@ export function deleteImage(image, staticDir) {
         });
     });
 }
-export function handleUpdateImages(newImages, oldImages, staticDir) {
+export function handleUpdateImages(newImages, oldImages) {
     // compare new/old ids, delete removed images
     const newIds = newImages.map((e) => e.filename);
     const oldIds = oldImages.map((e) => e.filename);
@@ -45,7 +46,7 @@ export function handleUpdateImages(newImages, oldImages, staticDir) {
         if (!newIds.includes(oldId)) {
             for (const image of oldImages) {
                 if (image.filename === oldId)
-                    deleteImage(image, staticDir);
+                    deleteImage(image);
             }
         }
     }
