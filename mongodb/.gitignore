@@ -1,0 +1,6 @@
+config.sh
+db.json
+entries.json
+dump/
+export/
+mongodb-data/

@@ -14,10 +14,18 @@ const user = {
 // const bcrypt = require('bcrypt');
 // bcrypt.hashSync('beboop', 10);
 
+// database setup
+const dbUser = 'reflectapp-admin';
+const dbPassword = 'example123';
+const dbUrl = 'mongodb://reflectapp-mongodb:27017';
+const dbName = 'reflectapp';
+
 // files/paths
+// -> deprecate when db works
 const dataFile = 'db/db.json';
 const staticDir = 'client/dist';
 // (mediaDir is below staticDir)
 const mediaDir = 'media';
 
-export { port, secret, user, dataFile, staticDir, mediaDir };
+export { port, secret, user, dbUser, dbPassword, dbUrl, dbName, dataFile,
+  staticDir, mediaDir };

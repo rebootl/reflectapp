@@ -1,6 +1,5 @@
 import express from 'express';
 import compression from 'compression';
-import fs from 'fs';
 import expressJwt from 'express-jwt';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
@@ -10,10 +9,40 @@ import request from 'request';
 import HTMLParser from 'node-html-parser';
 // projectData
 import Endpoint from '@lsys/projectData/esm/Endpoint';
-import { CustomQuery } from '@lsys/projectData/esm/Misc/Custom';
+import { MongoDBQuery } from '@lsys/projectData/esm/Misc/MongoDB';
+import { default as mongodb } from 'mongodb';
 // own imports
 import * as config from '../config.js';
 import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
+// db setup
+const dbEntriesCollection = 'entries';
+const MongoClient = mongodb.MongoClient;
+const client = new MongoClient(config.dbUrl, {
+    auth: { user: config.dbUser, password: config.dbPassword },
+    useUnifiedTopology: true
+});
+// example db query, from docs: get documents from db
+// const findDocuments = function(db, callback) {
+//   // Get the documents collection
+//   const collection = db.collection(dbEntriesCollection);
+//   // Find some documents
+//   collection.find({}).toArray(function(err, docs) {
+//     if (err) {
+//       console.log(err);
+//       return;
+//     }
+//     console.log("Found the following records");
+//     console.log(docs)
+//     callback(docs);
+//   });
+// }
+// use projectData MongoDatabase connector -> needs import fix
+// async function dbinit() {
+//   const db = await MongoDatabase(dbUrl, dbName,
+//     { auth: { user: dbUser, password: dbPassword }});
+//   findDocuments(db, ()=>{});
+// }
+// dbinit();
 // setup app
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -27,14 +56,6 @@ app.use(fileupload({
 }));
 // static files (incl. client)
 app.use('/', express.static(config.staticDir));
-// persistent storage
-// load data
-let data = JSON.parse(fs.readFileSync(config.dataFile, 'utf8'));
-// write data
-const writeData = () => {
-    const str = JSON.stringify(data);
-    fs.writeFileSync(config.dataFile, str);
-};
 // login / jwt stuff
 function createToken() {
     // sign with default (HMAC SHA256)
@@ -42,26 +63,7 @@ function createToken() {
     var token = jwt.sign({ user: config.user.name }, config.secret);
     return token;
 }
-// routes
-app.post('/api/login', (req, res) => {
-    if (req.body.username !== config.user.name) {
-        res.sendStatus(401);
-        return;
-    }
-    bcrypt.compare(req.body.password, config.user.pwhash).then((check) => {
-        if (check) {
-            console.log("login ok");
-            res.send({
-                success: true,
-                token: createToken()
-            });
-        }
-        else {
-            console.log("login failed");
-            res.sendStatus(401);
-        }
-    });
-});
+// routes w/o db access
 const htmlParser = HTMLParser;
 app.get('/api/urlinfo', (req, res) => {
     if (!req.user) {
@@ -81,6 +83,13 @@ app.get('/api/urlinfo', (req, res) => {
         }
         const contentType = response.headers['content-type'];
         const root = htmlParser.parse(response.body);
+        if (!root.valid) {
+            res.send({
+                success: false,
+                errorMessage: "error parsing body..."
+            });
+            return;
+        }
         const title = root.querySelector('title').text;
         res.send({
             success: true,
@@ -114,55 +123,94 @@ app.post('/api/uploadMultiImages', async (req, res) => {
         files: files
     });
 });
-// projectData endpoints
-app.use('/api/entries', new Endpoint({
-    query: new CustomQuery({ update: () => data }),
-    id: (e) => e.id,
-    filter: (e, req) => {
-        if (e.private) {
-            if (req.user)
-                return e;
-            else
-                return;
-        }
-        return e;
-    },
-    add: async (obj, req) => {
-        console.log("add entry user: ", req.user);
-        if (!req.user)
-            return;
-        data.push(obj);
-        writeData();
-    },
-    delete: async (obj, req) => {
-        if (!req.user)
-            return;
-        console.log("DELETE");
-        // backwards compat.
-        if (obj.images) {
-            for (const image of obj.images) {
-                deleteImage(image);
-            }
-        }
-        data = data.filter((v) => v.id !== obj.id);
-        writeData();
-    },
-    update: async (newObj, oldObj, req) => {
-        if (!req.user)
-            return;
-        console.log("UPDATE");
-        // remove old entry
-        data = data.filter((v) => v.id !== oldObj.id);
-        // handle images
-        if (!newObj.images)
-            newObj.images = [];
-        if (!oldObj.images)
-            oldObj.images = [];
-        handleUpdateImages(newObj.images, oldObj.images);
-        // insert new entry
-        data.push(newObj);
-        writeData();
+// routes that need db access
+// db connector
+client.connect((err) => {
+    if (err) {
+        console.log("Error connecting to db: ");
+        throw err;
     }
-}).router);
+    console.log("Connected successfully to server");
+    const db = client.db(config.dbName);
+    const entriesCollection = db.collection(dbEntriesCollection);
+    // test
+    //findDocuments(db, ()=>{});
+    // login
+    app.post('/api/login', (req, res) => {
+        if (req.body.username !== config.user.name) {
+            res.sendStatus(401);
+            return;
+        }
+        bcrypt.compare(req.body.password, config.user.pwhash).then((check) => {
+            if (check) {
+                console.log("login ok");
+                res.send({
+                    success: true,
+                    token: createToken()
+                });
+            }
+            else {
+                console.log("login failed");
+                res.sendStatus(401);
+            }
+        });
+    });
+    // projectData endpoints
+    app.use('/api/entries', new Endpoint({
+        query: new MongoDBQuery(db, { collection: dbEntriesCollection, query: {} }),
+        id: (e) => e.id,
+        filter: (e, req) => {
+            if (e.private) {
+                if (req.user)
+                    return e;
+                else
+                    return;
+            }
+            return e;
+        },
+        add: async (obj, req) => {
+            console.log("add entry user: ", req.user);
+            if (!req.user)
+                return;
+            entriesCollection.insertOne(obj).catch(err => {
+                console.log("Error writing entry to db: ", err);
+            });
+        },
+        delete: async (obj, req) => {
+            if (!req.user)
+                return;
+            console.log("DELETE");
+            // backwards compat.
+            if (obj.images) {
+                for (const image of obj.images) {
+                    deleteImage(image);
+                }
+            }
+            entriesCollection.deleteOne({ id: obj.id }).catch(err => {
+                console.log("Error deleting entry from db: ", err);
+            });
+        },
+        update: async (newObj, oldObj, req) => {
+            if (!req.user)
+                return;
+            console.log("UPDATE");
+            // handle images
+            if (!newObj.images)
+                newObj.images = [];
+            if (!oldObj.images)
+                oldObj.images = [];
+            handleUpdateImages(newObj.images, oldObj.images);
+            // remove fields that are not to update, _id cannot update
+            delete newObj._id;
+            delete newObj.id;
+            delete newObj.date;
+            entriesCollection.updateOne({ id: oldObj.id }, { $set: newObj })
+                .catch(err => {
+                console.log("Error updating entry in db: ", err);
+            });
+        }
+    }).router);
+    //client.close();
+});
 app.listen(config.port);
 console.log('listening on ' + config.port);

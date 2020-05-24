@@ -8,6 +8,7 @@
 * tests?
 * naming conventions css?
 * make everything async?
+* check if entry id exists already maybe
 
 ### Current
 
