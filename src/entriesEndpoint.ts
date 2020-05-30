@@ -1,8 +1,13 @@
 
+import { MongoDBQuery } from '@lsys/projectData/esm/Misc/MongoDB';
+import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
 
 
-const entriesEndpoint = new Endpoint({
-  query: new MongoDBQuery(db, { collection: dbEntriesCollection, query: {} }),
+export default async function getEntriesEndpointConfig(db, entriesCollection) {
+  //const entriesCollection = await db.collection('entries');
+
+return {
+  query: new MongoDBQuery(db, { collection: 'entries', query: {} }),
   id: (e : any) => e.id,
   filter: (e : any, req : any) => {
     if (e.private) {
@@ -47,6 +52,5 @@ const entriesEndpoint = new Endpoint({
         console.log("Error updating entry in db: ", err);
     });
   }
-});
-
-export default entriesEndpoint;
+};
+}

@@ -1,26 +1,25 @@
 import { default as mongodb } from 'mongodb';
 import * as config from '../config.js';
 // db setup
-let conn;
+let db;
 const MongoClient = mongodb.MongoClient;
 const client = new MongoClient(config.dbUrl, {
     auth: { user: config.dbUser, password: config.dbPassword },
     useUnifiedTopology: true
 });
-function getDb() {
-    return new Promise((res, rej) => {
-        client.connect((err, db) => {
-            if (err) {
-                console.log("Error connecting to db: ");
-                rej(err);
-            }
+async function getDb() {
+    if (!db) {
+        try {
+            await client.connect();
             console.log("Connected successfully to server");
-            res(db);
-            conn = db;
-        });
-    });
+            return await client.db(config.dbName);
+        }
+        catch (e) {
+            throw e;
+        }
+    }
+    else {
+        return db;
+    }
 }
-function getConn() {
-    return conn;
-}
-export { getDb, getConn };
+export default getDb;
