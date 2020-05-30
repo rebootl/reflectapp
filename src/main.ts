@@ -17,10 +17,10 @@ import { default as mongodb } from 'mongodb';
 // own imports
 import * as config from '../config.js';
 import { storeImage, deleteImage, handleUpdateImages } from './imageStorage.js';
+//import { getDb, getConn } from './db.js';
 
 // db setup
 
-const dbEntriesCollection : string = 'entries';
 const MongoClient = mongodb.MongoClient;
 const client = new MongoClient(config.dbUrl, {
   auth: { user: config.dbUser, password: config.dbPassword },
@@ -143,16 +143,37 @@ app.post('/api/uploadMultiImages', async (req : any, res : any) => {
 
 // db connector
 
-client.connect((err) => {
+let db;
+
+async function getDb() {
+  if (!db) {
+    try {
+      await client.connect();
+      return await client.db(config.dbName);
+    } catch(e) {
+      throw e;
+    }
+  } else {
+    return db;
+  }
+}
+
+async function main() {
+
+/*client.connect((err) => {
   if (err) {
     console.log("Error connecting to db: ");
     throw err;
   }
   console.log("Connected successfully to server");
-  const db = client.db(config.dbName);
-  const entriesCollection = db.collection(dbEntriesCollection);
+  const db = client.db(config.dbName);*/
+  //console.log(getConn())
+  //const entriesCollection = getConn().collection('entries');
   // test
   //findDocuments(db, ()=>{});
+
+  const db = await getDb();
+  const entriesCollection = db.collection('entries');
 
   // login
 
@@ -177,8 +198,8 @@ client.connect((err) => {
 
   // projectData endpoints
 
-  app.use('/api/entries', new Endpoint({
-    query: new MongoDBQuery(db, { collection: dbEntriesCollection, query: {} }),
+  const entriesEndpoint = new Endpoint({
+    query: new MongoDBQuery(db, { collection: 'entries', query: {} }),
     id: (e : any) => e.id,
     filter: (e : any, req : any) => {
       if (e.private) {
@@ -223,9 +244,13 @@ client.connect((err) => {
           console.log("Error updating entry in db: ", err);
       });
     }
-  }).router);
-  //client.close();
-});
+  });
 
-app.listen(config.port);
-console.log('listening on ' + config.port);
+  app.use('/api/entries', entriesEndpoint.router);
+  //client.close();
+//});
+
+  app.listen(config.port);
+  console.log('listening on ' + config.port);
+}
+main();

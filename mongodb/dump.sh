@@ -5,6 +5,6 @@
 
 docker exec reflectapp-mongodb \
   sh -c 'exec mongodump --authenticationDatabase=admin \
-    -u "$USER" -p "$PASSWORD" \
+    -u "reflectapp-admin" -p "example123" \
     -d reflectapp --archive' \
   > dump/reflectapp.dump
