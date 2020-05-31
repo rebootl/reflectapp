@@ -1,19 +1,20 @@
 import express from 'express';
 import compression from 'compression';
 import expressJwt from 'express-jwt';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
 import fileupload from 'express-fileupload';
 
 // projectData
 import Endpoint from '@lsys/projectData/esm/Endpoint';
 
-// own imports
-import * as config from '../config.js';
+// routes
 import routeUrlInfo from './routeUrlInfo.js'
 import routeUploadMultiImages from './routeUploadMultiImages.js';
+import routeLogin from './routeLogin.js';
+// db
 import getDb from './db.js';
 import getEntriesEndpointConfig from './entriesEndpoint.js';
+// config
+import * as config from '../config.js';
 
 // setup app
 
@@ -31,54 +32,28 @@ app.use(fileupload({
 // static files (incl. client)
 app.use('/', express.static(config.staticDir,));
 
-// login / jwt stuff
-
-function createToken() : string {
-  // sign with default (HMAC SHA256)
-  //let expirationDate =  Math.floor(Date.now() / 1000) + 30 //30 seconds from now
-  var token = jwt.sign({ user: config.user.name }, config.secret);
-  return token;
-}
-
 // routes w/o db access
 
 app.get('/api/urlinfo', async (req: any, res, any) => routeUrlInfo(req, res));
-
-app.post('/api/uploadMultiImages', async (req : any, res : any) => routeUploadMultiImages(req, res));
+app.post('/api/uploadMultiImages',
+  async (req : any, res : any) => routeUploadMultiImages(req, res));
 
 // routes that need db access
 
 async function main() {
-
   const db = await getDb();
-  const entriesCollection = await db.collection('entries');
+  //const entriesCollection = await db.collection('entries');
+  //const usersCollection = await db.collection('users');
+  app.locals.db = db;
 
   // login
-
-  app.post('/api/login', (req : any, res : any) => {
-    if (req.body.username !== config.user.name) {
-      res.sendStatus(401);
-      return;
-    }
-    bcrypt.compare(req.body.password, config.user.pwhash).then((check) => {
-      if (check) {
-        console.log("login ok");
-        res.send({
-          success: true,
-          token: createToken()
-        });
-      } else {
-        console.log("login failed");
-        res.sendStatus(401);
-      }
-    });
-  });
+  app.post('/api/login', async (req: any, res: any) => routeLogin(req, res));
 
   // projectData endpoints
-  const entriesEndpointConfig = await getEntriesEndpointConfig(db, entriesCollection);
-
+  const entriesEndpointConfig = await getEntriesEndpointConfig(db);
   app.use('/api/entries', new Endpoint(entriesEndpointConfig).router);
 
+  // app start
   app.listen(config.port);
   console.log('listening on ' + config.port);
 }
