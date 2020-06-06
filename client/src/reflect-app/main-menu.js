@@ -29,20 +29,22 @@ class MainMenu extends HTMLElement {
   connectedCallback() {
     myrouter.register(this);
   }
-  router_register(url_state_obj) {
+  /*router_register(url_state_obj) {
     this.update_menu_by_url(url_state_obj);
     this.update();
+  }*/
+  //router_load(url_state_obj) {}
+  routerUpdate(route, parts, parameters) {
+    this.activeTopics = parts[0];
+    this.activeTags = parts[1];
+    this.update();
   }
-  router_load(url_state_obj) {}
-  router_update(url_state_obj) {
-    this.update_menu_by_url(url_state_obj);
-  }
-  update_menu_by_url(url_state_obj) {
+  /*update_menu_by_url(url_state_obj) {
     const params = url_state_obj.params;
     this.active_topics = params.topics || [];
-    this.active_subtags = params.subtags || [];
+    this.activeTags = params.subtags || [];
     this.update();
-  }
+  }*/
   async update_url() {
     // generate url
     // format e.g. #entries?select=true&topic_id[]=3&tag_id[]=2&tag_id[]=3
@@ -50,35 +52,35 @@ class MainMenu extends HTMLElement {
     // #entries?select=true &topic_id[]=3 &tag_id[]=2 &tag_id[]=3
 
     let hash_url = "#entries";
-    if (this.active_topics.length > 0) {
+    if (this.activeTopics.length > 0) {
       hash_url += "?selected";
-      for (const t of this.active_topics) {
+      for (const t of this.activeTopics) {
         hash_url += '&topics[]=' + encodeURIComponent(t);
       }
-      for (const s of this.active_subtags) {
+      for (const s of this.activeTags) {
         hash_url += '&subtags[]=' + encodeURIComponent(s);
       }
     }
     // update it
     window.location.hash = hash_url;
   }
-  updateUrlTopics(active_topics) {
-    this.active_topics = active_topics;
+  updateUrlTopics(activeTopics) {
+    this.activeTopics = activeTopics;
     this.update_url();
   }
-  updateUrlSubtags(active_subtags) {
-    this.active_subtags = active_subtags;
+  updateUrlSubtags(activeTags) {
+    this.activeTags = activeTags;
     this.update_url();
   }
   update() {
     render(html`${style}
       <topics-list
-        .activeTopics=${this.active_topics}
+        .activeTopics=${this.activeTopics}
         @selectionchanged=${(e)=>this.updateUrlTopics(e.detail)}>
       </topics-list>
       <subtags-list
-        .activeTopics=${this.active_topics}
-        .activeSubtags=${this.active_subtags}
+        .activeTopics=${this.activeTopics}
+        .activeSubtags=${this.activeTags}
         @selectionchanged=${(e)=>this.updateUrlSubtags(e.detail)}>
       </subtags-list>
     `, this.shadowRoot);

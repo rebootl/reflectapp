@@ -1,6 +1,7 @@
 import { html, render } from 'lit-html';
 import { api } from './resources/api-service.js';
 import { observableList } from './resources/observableList';
+import { myrouter } from './resources/router.js';
 import './entry-item.js';
 
 const style = html`
@@ -30,12 +31,13 @@ class EntriesList extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
+    myrouter.register(this);
     this.entries = api.observe('entries');
     this.defaultLimit = 3;
     this.limit = this.defaultLimit;
   }
   connectedCallback() {
-    this.update();
+    //this.update();
     this.bottomObserver = new IntersectionObserver((e)=>this._loadContent(e),
       { threshold: 0.1 }
     );
@@ -47,13 +49,18 @@ class EntriesList extends HTMLElement {
     const ul = this.shadowRoot.querySelector('ul');
     ulMutationObserver.observe(ul, { childList: true });
   }
-  triggerUpdate(urlStateObject) {
+  routerUpdate(route, parts, parameters) {
+    this.activeTopics = parts[0];
+    this.activeTags = parts[1];
+    this._resetLimit([{intersectionRatio: 1}]);
+  }
+  /*triggerUpdate(urlStateObject) {
     console.log('updating entries-list...');
     const params = urlStateObject.params;
     this.activeTopics = params.topics || [];
     this.activeTags = params.subtags || [];
     this._resetLimit([{intersectionRatio: 1}]);
-  }
+  }*/
   _updateObserver(mutationsList, observer) {
     const ul = this.shadowRoot.querySelector('ul');
     const newLastli = ul.lastElementChild;

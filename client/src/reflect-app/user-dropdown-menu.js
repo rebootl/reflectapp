@@ -98,7 +98,7 @@ class UserDropdownMenu extends HTMLElement {
   update_after_success() {
     this.close();
     this.update();
-    myrouter.trigger_update();
+    myrouter.triggerUpdate();
   }
   get_login_content() {
     if (loggedIn()) {

@@ -1,5 +1,6 @@
 import { html, render } from 'lit-html';
 import { myrouter } from './resources/router.js';
+import { loggedIn } from './resources/auth.js';
 import './view-entries.js';
 import './view-single-entry.js';
 import './view-edit-entry.js';
@@ -38,25 +39,40 @@ class MainContent extends HTMLElement {
     this.attachShadow({mode: 'open'});
     myrouter.register(this);
   }
-  router_register(url_state_obj) {}
-  router_load(url_state_obj) {
-    this.router_update(url_state_obj);
-  }
-  router_update(url_state_obj) {
-    if (routes.hasOwnProperty(url_state_obj.route)) {
-      this.routed_content = routes[url_state_obj.route](url_state_obj);
-    } else {
-      // -> maybe flash msg here... `route not found :(`
-      // default to entries
-      this.routed_content = routes['entries'](url_state_obj);
-    }
+  routerUpdate(route, parts, parameters) {
+    this._route = route;
+    /*this._topics = parts[0];
+    this._tags = parts[1];*/
+    //this._parameters = parameters;
+
+    this._mainContent
     this.update();
-    const triggeredContent = this.shadowRoot.querySelector('.triggerupdate');
-    if (triggeredContent) triggeredContent.triggerUpdate(url_state_obj);
+    //const triggeredContent = this.shadowRoot.querySelector('.triggerupdate');
+    //if (triggeredContent) triggeredContent.triggerUpdate(url_state_obj);
+  }
+  _getContent() {
+    const r = this._route;
+    if (r.startsWith('~')) {
+      return html`[ -> get user content ]`;
+    }
+    if (r === 'me') {
+      if (loggedIn()) {
+        return html`<view-entries></view-entries>`;
+      }
+      return html`[ -> login or sign-up ]`;
+    }
+    if (r === 'signup') {
+      if (loggedIn()) {
+        return html`[ -> u already have an account ]`;
+      }
+      return html`[ -> show signup page ]`;
+    }
+    myrouter.setUrl('', [], []);
+    return html`[ -> show overview ]`;
   }
   update() {
     render(html`${style}
-        ${this.routed_content}
+        ${this._getContent()}
       `, this.shadowRoot);
   }
 }

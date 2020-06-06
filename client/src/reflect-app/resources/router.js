@@ -15,84 +15,60 @@
 //    k2: 'v2'
 //  }
 // }
-const registered_components = new Set();
+//
+//
+// example.com/#<route>/<part>/<part>/?<parameters>
+//
+//
+const registeredComponents = new Set();
 
 const dec = decodeURIComponent;
+const enc = encodeURIComponent;
 
 class Router {
-  register(comp) {
-    registered_components.add(comp);
-    const route_params_obj = this.parse_url();
-    console.log("router register");
-    comp.router_register(route_params_obj);
-  }
   constructor() {
-    window.addEventListener('hashchange', ()=>this.url_change());
-    window.addEventListener('load', ()=>this.page_load());
+    window.addEventListener('hashchange', ()=>this.urlChange());
+    window.addEventListener('load', ()=>this.urlChange());
   }
-  trigger_update() {
-    this.url_change();
+  register(comp) {
+    console.log("router register: ", comp);
+    registeredComponents.add(comp);
   }
-  page_load() {
-    const route_params_obj = this.parse_url();
-    console.log("router load");
-    registered_components.forEach(comp => {
-      comp.router_load(route_params_obj);
-    })
+  triggerUpdate() {
+    this.urlChange();
   }
-  url_change() {
-    const route_params_obj = this.parse_url();
+  urlChange() {
+    this.parseUrl();
     console.log("router update");
-    registered_components.forEach(comp => {
-      comp.router_update(route_params_obj);
-    })
+    for (const c of registeredComponents) {
+      console.log("comp: ", c)
+      c.routerUpdate(this._route, this._parts, this._parameters);
+    }
   }
-  parse_url() {
-    let params = {};
-    const hash_str = location.hash.slice(1) || '';
-    const route_params = hash_str.split('?');
-    if (route_params.length > 1) {
-      // extract params from params_str
-      const param_pairs = route_params[1].split('&');
-      param_pairs.forEach(pp => {
-        let k, v;
-        [ k, v ] = pp.split('=');
-        if (k.endsWith('[]')) {
-          const k_name = k.slice(0, -2);
-          if (params.hasOwnProperty(k_name)) {
-            params[dec(k_name)].push(dec(v));
-          } else {
-            params[dec(k_name)] = [ dec(v) ];
-          }
-        } else {
-          params[dec(k)] = dec(v);
-        }
-      });
+  parseUrl() {
+    const hashString = location.hash.slice(1) || '';
+    // ~username/Chess+Computing+Misc/KSP+Linux/ ? <parameters>
+    const [ path, parameters ] = hashString.split('?');
+    const pathParts = path.split('/');
+    // ~username
+    this._route = pathParts[0];
+    // [ Chess+Computing+Misc, KSP+Linux ]
+    // [ [ Chess, Computing, Misc ], [ KSP, Linux ] ]
+    this._parts = pathParts.slice(1).map(p=>p.split('+').map(p=>dec(p)));
+    this._parameters = parameters ? parameters.split('&').map((p)=>dec(p)) : [];
+  }
+  setUrl(route, parts, parameters) {
+    const parameterString = parameters.map(p=>enc(p)).join('&');
+    const partsStrings = [];
+    for (const p of parts) {
+      partsStrings.push(p.map(p=>enc(p)).join('+'));
     }
-    //console.log(params);
-    this.route = route_params[0];
-    this.params = params;
-    return {
-      route: route_params[0],
-      params: params,
-      params_str: route_params[1]
-    }
+    const partsString = partsStrings.join('/');
+    const hashString = '#' + route;
+    if (partsString.length > 0) hashString += '/' + partsString;
+    if (parameterString.length > 0) hashString += '?' + parameterString;
+    window.location.hash = hashString;
   }
 }
-
-    // old version
-    /*let route, params_str;
-    if (hash_str.includes('?')) {
-      [ route, params_str ] = hash_str.split('?');
-
-    } else {
-      route = hash_str;
-      params_str = "";
-    }*/
-    //console.log(route);
-    /*if (!routes.hasOwnProperty(ref)) {
-      console.log('route not found, using "entries"');
-      ref = 'entries';
-    }*/
 
 export const myrouter = new Router();

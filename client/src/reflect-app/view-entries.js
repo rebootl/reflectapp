@@ -31,10 +31,10 @@ class ViewEntries extends HTMLElement {
   connectedCallback() {
     this.update();
   }
-  triggerUpdate(urlStateObject) {
+  /*triggerUpdate(urlStateObject) {
     this.update();
     this.shadowRoot.querySelector('entries-list').triggerUpdate(urlStateObject);
-  }
+  }*/
   update() {
     render(html`${style}
       ${ loggedIn() ?
