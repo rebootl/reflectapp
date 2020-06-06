@@ -20,13 +20,16 @@ const style = html`
 `;
 
 const routes = {
-  'entries': (o) => html`<view-entries class="triggerupdate"
-    .url_state_obj=${o}></view-entries>`,
+  'entries': (o) => html`
+      <view-entries class="triggerupdate"
+                    .url_state_obj=${o}>
+      </view-entries>`,
   'entry': (o) => html`<view-single-entry class="triggerupdate"
     .urlStateObject=${o}></view-single-entry>`,
   'edit-entry': (o) => html`<view-edit-entry class="triggerupdate"
     .urlStateObject=${o}>
     </view-edit-entry>`,
+  'signup': (o) => html`<signup></signup>`,
 };
 
 class MainContent extends HTMLElement {

@@ -70,6 +70,8 @@ class Router {
       });
     }
     //console.log(params);
+    this.route = route_params[0];
+    this.params = params;
     return {
       route: route_params[0],
       params: params,

@@ -21,7 +21,7 @@ const style = html`
     }
     .overlay {
       background-color: rgba(255, 255, 255, 0.16);
-      padding: 20px 25px 20px 25px;
+      padding: 20px 25px 15px 25px;
     }
     /*close-button {
       position: absolute;
@@ -39,6 +39,14 @@ const style = html`
     /*#logout-button {
       margin-top: 15px;
     }*/
+    small {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    a {
+      color: var(--primary);
+    }
   </style>
 `;
 
@@ -108,6 +116,7 @@ class UserDropdownMenu extends HTMLElement {
           <labelled-button @click=${()=>this.submit()}
                            label="Login"></labelled-button>
         </div>
+        <small><a href="#signup">Sign up</a></small>
       </form>`;
     }
   }
