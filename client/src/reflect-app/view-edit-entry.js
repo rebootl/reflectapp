@@ -4,6 +4,7 @@ import './entry-header.js';
 import './entry-input.js';
 import './gen-elements/labelled-button.js';
 import './gen-elements/labelled-checkbox.js';
+// -> use for preview
 //import './entry-item.js';
 import './selection-box.js';
 import './edit-images.js';
@@ -13,6 +14,7 @@ const style = html`
     :host {
       display: block;
       box-sizing: border-box;
+      margin: 20px;
     }
     entry-input {
       margin-top: 20px;
@@ -49,15 +51,15 @@ const style = html`
 `;
 
 class ViewEditEntry extends HTMLElement {
+  set id(v) {
+    this._id = v;
+  }
+  get id() {
+    return this._id;
+  }
   get valid() {
     if (this.selectionResult.ready) return true;
     return false;
-  }
-  set urlStateObject(v) {
-    this._urlStateObject = v;
-  }
-  get urlStateObject() {
-    return this._urlStateObject;
   }
   get selectionResult() {
     return this._selectionResult || { ready: true };
@@ -76,15 +78,10 @@ class ViewEditEntry extends HTMLElement {
   connectedCallback() {
     this.updateQuery();
   }
-  triggerUpdate() {
-    this.updateQuery();
-  }
   async updateQuery() {
-    const params = this.urlStateObject.params;
-    const entryId = params.id || [];
-    console.log(entryId);
+    console.log(this.id);
     const db = await api.getSource('entries');
-    const [ entry ] = await db.query({ id: entryId });
+    const [ entry ] = await db.query({ id: this.id });
     // setting false fixes finding entry when url changed, from already loaded
     // entry
     this.oldEntry = false;

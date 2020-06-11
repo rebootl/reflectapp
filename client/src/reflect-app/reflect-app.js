@@ -1,7 +1,12 @@
 import { html, render } from 'lit-html';
+import { myrouter } from './resources/router.js';
+import { loggedIn } from './resources/auth.js';
 import './main-header.js';
-import './main-menu.js';
-import './main-content.js';
+import './editor-menu.js';
+//import './main-content.js';
+import './view-entries.js';
+//import './view-single-entry.js';
+import './view-edit-entry.js';
 
 const style = html`
   <style>
@@ -84,18 +89,19 @@ const style = html`
         "add-box"
         "main-content";
     }
-    main-header {
+    header {
       grid-area: header;
     }
-    main-menu {
+    nav {
       grid-area: main-menu;
+      background-color: var(--surface);
     }
     #add-box {
       grid-area: add-box;
       height: 50px;
       /*border: 1px dashed #333;*/
     }
-    main-content {
+    main {
       grid-area: main-content;
     }
     @media all and (min-width: 680px) {
@@ -108,7 +114,7 @@ const style = html`
           "add-box    main-content";
         min-height: calc(100vh - 49px);
       }
-      main-content {
+      main {
         max-width: 650px;
       }
     }
@@ -125,7 +131,7 @@ const style = html`
           "header     header        header"
           "main-menu  main-content  add-box";
       }
-      main-content {
+      main {
         width: 650px;
         justify-self: center;
       }
@@ -138,29 +144,56 @@ const style = html`
   </style>
 `;
 
-/* handle params in subcomp.
-const params = new URLSearchParams(params_str);
-for (let p of params) {
-  console.log(p);
-}
-console.log(params.getAll('foo'));
-*/
-
 class ReflectApp extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
   }
   connectedCallback() {
+    myrouter.register(this);
+  }
+  routerUpdate() {
     this.update();
+  }
+  _getBrowseMenu() {
+    return html`<nav><browse-menu>[ -> browse menu ]</browse-menu></nav>`;
+  }
+  _getOverviewMenu() {
+    return html`<nav><overview-menu>[ -> overview menu ]</overview-menu></nav>`;
+  }
+  _getContent() {
+    const r = myrouter.getRoute();
+    if (r.startsWith('~')) {
+      return html`${this._getBrowseMenu()}
+                  <main><browse-content>[ -> browse content ]</browse-content></main>`;
+    }
+    if (r === 'editor') {
+      if (!loggedIn()) return html`${this._getOverviewMenu()}
+                                   <main>[ -> login or sign-up ]</main>`;
+      // if <part> starts with ~ load the edit view
+      const p0 = myrouter.getParts(0)[0];
+      if (p0) if (p0.startsWith('~'))
+        return html`<nav><editor-menu></editor-menu></nav>
+        <main><view-edit-entry .id=${p0.slice(1)}></view-edit-entry></main>`;
+      return html`<nav><editor-menu></editor-menu></nav>
+                  <main><view-entries></view-entries><main>`;
+    }
+    if (r === 'signup') {
+      if (loggedIn()) return html`${this._getOverviewMenu()}
+                                  <main>[ -> you've got an account already... ]</main>`;
+      return html`${this._getBrowseMenu()}
+                  <main>[ -> show signup page ]<main>`;
+    }
+    myrouter.setUrl('', [], []);
+    return html`${this._getOverviewMenu()}
+                <main>[ -> show overview ]</main>`;
   }
   update() {
     render(html`${style}
         <div id="wrapper-container">
-          <main-header></main-header>
-          <main-menu></main-menu>
+          <header><main-header></main-header></header>
+          ${this._getContent()}
           <div id="add-box"></div>
-          <main-content></main-content>
         </div>
       `
       , this.shadowRoot);

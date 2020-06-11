@@ -1,23 +1,20 @@
-
-// components that want routing should register using:
-//   Router.register(this)
 //
-// they shall implement:
-//   comp.router_register(url_state_obj)
-//   comp.router_update(url_state_obj)
-//   comp.router_load(url_state_obj)
-// which will be called on url update/page load/register
+// url:
 //
-// url_state_obj being something like: {
-//  route: 'blabla',
-//  params: {
-//    k1: 'v1',
-//    k2: 'v2'
-//  }
-// }
+// /#<route> / <part>+<part>+.. / <part>+<part>+.. / .. / ?<bool>&<bool>&..
+// route     parts                                        boolean-parameters
+// str      [ [ str, str, .. ], [ str, str, .. ], .. ]    [ str, str, .. ]
 //
+// examples:
 //
-// example.com/#<route>/<part>/<part>/?<parameters>
+// /#editor/Computing+Chess/openings+ai
+// view-entries topics       tags
+//
+// /#edit-entry/entry-id_fooblabla-a4fa49ebb
+// view-editor  entry-id
+//
+// /#~username/Astro+Nature/snapshots
+// view-user   topics       tags
 //
 //
 const registeredComponents = new Set();
@@ -31,8 +28,13 @@ class Router {
     window.addEventListener('load', ()=>this.urlChange());
   }
   register(comp) {
-    console.log("router register: ", comp);
+    console.log("router register");
     registeredComponents.add(comp);
+    // -> check if registered multiple times!!!
+    console.log(registeredComponents)
+  }
+  unregister(comp) {
+    registeredComponents.delete(comp);
   }
   triggerUpdate() {
     this.urlChange();
@@ -41,13 +43,21 @@ class Router {
     this.parseUrl();
     console.log("router update");
     for (const c of registeredComponents) {
-      console.log("comp: ", c)
-      c.routerUpdate(this._route, this._parts, this._parameters);
+      c.routerUpdate();
     }
+  }
+  getRoute() {
+    return this._route;
+  }
+  getParts(n) {
+    return this._parts[n] || [];
+  }
+  getParameters() {
+    return this._parameters || [];
   }
   parseUrl() {
     const hashString = location.hash.slice(1) || '';
-    // ~username/Chess+Computing+Misc/KSP+Linux/ ? <parameters>
+    // ~username / Chess+Computing+Misc / KSP+Linux / ? <parameters>
     const [ path, parameters ] = hashString.split('?');
     const pathParts = path.split('/');
     // ~username
@@ -55,17 +65,25 @@ class Router {
     // [ Chess+Computing+Misc, KSP+Linux ]
     // [ [ Chess, Computing, Misc ], [ KSP, Linux ] ]
     this._parts = pathParts.slice(1).map(p=>p.split('+').map(p=>dec(p)));
+    // -> needed?
+    if (this._parts[0]) if (this._parts[0][0] === '') this._parts[0] = [];
+
     this._parameters = parameters ? parameters.split('&').map((p)=>dec(p)) : [];
   }
-  setUrl(route, parts, parameters) {
+  setUrl(route, parts=[[]], parameters=[]) {
     const parameterString = parameters.map(p=>enc(p)).join('&');
-    const partsStrings = [];
+    const pts = [];
     for (const p of parts) {
-      partsStrings.push(p.map(p=>enc(p)).join('+'));
+      // [ [ "Chess", "Computing", "Misc" ], [ "KSP", "Linux" ] ]
+      pts.push(p.map(p=>enc(p)).join('+'));
+      // [ "Chess+Computing+Misc", "KSP+Linux" ]
     }
-    const partsString = partsStrings.join('/');
-    const hashString = '#' + route;
-    if (partsString.length > 0) hashString += '/' + partsString;
+    // "Chess+Computing+Misc/KSP+Linux"
+    let s = pts[0];
+    if (pts[1]) if (pts[1] !== "") s = pts.join('/');
+
+    let hashString = '#' + route;
+    if (pts.length > 0) hashString += '/' + s;
     if (parameterString.length > 0) hashString += '?' + parameterString;
     window.location.hash = hashString;
   }

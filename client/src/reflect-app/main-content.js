@@ -37,34 +37,28 @@ class MainContent extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
+  }
+  connectedCallback() {
     myrouter.register(this);
   }
-  routerUpdate(route, parts, parameters) {
-    this._route = route;
-    /*this._topics = parts[0];
-    this._tags = parts[1];*/
-    //this._parameters = parameters;
-
-    this._mainContent
+  routerUpdate() {
     this.update();
-    //const triggeredContent = this.shadowRoot.querySelector('.triggerupdate');
-    //if (triggeredContent) triggeredContent.triggerUpdate(url_state_obj);
   }
   _getContent() {
-    const r = this._route;
+    const r = myrouter.getRoute();
     if (r.startsWith('~')) {
       return html`[ -> get user content ]`;
     }
-    if (r === 'me') {
-      if (loggedIn()) {
-        return html`<view-entries></view-entries>`;
-      }
-      return html`[ -> login or sign-up ]`;
+    if (r === 'editor') {
+      if (!loggedIn()) return html`[ -> login or sign-up ]`;
+      // if <part> starts with ~ load the edit view
+      const p0 = myrouter.getParts(0)[0];
+      if (p0) if (p0.startsWith('~'))
+        return html`<view-edit-entry .id=${p0.slice(1)}></view-edit-entry>`;
+      return html`<view-entries></view-entries>`;
     }
     if (r === 'signup') {
-      if (loggedIn()) {
-        return html`[ -> u already have an account ]`;
-      }
+      if (loggedIn()) return html`[ -> you've already an account ]`;
       return html`[ -> show signup page ]`;
     }
     myrouter.setUrl('', [], []);

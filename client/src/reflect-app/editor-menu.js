@@ -21,7 +21,7 @@ const style = html`
   </style>
 `;
 
-class MainMenu extends HTMLElement {
+class EditorMenu extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
@@ -29,40 +29,20 @@ class MainMenu extends HTMLElement {
   connectedCallback() {
     myrouter.register(this);
   }
-  /*router_register(url_state_obj) {
-    this.update_menu_by_url(url_state_obj);
-    this.update();
-  }*/
-  //router_load(url_state_obj) {}
-  routerUpdate(route, parts, parameters) {
-    this.activeTopics = parts[0];
-    this.activeTags = parts[1];
+  disconnectedCallback() {
+    myrouter.unregister(this);
+  }
+  routerUpdate() {
+    this.activeTopics = myrouter.getParts(0);
+    this.activeTags = myrouter.getParts(1);
     this.update();
   }
-  /*update_menu_by_url(url_state_obj) {
-    const params = url_state_obj.params;
-    this.active_topics = params.topics || [];
-    this.activeTags = params.subtags || [];
-    this.update();
-  }*/
-  async update_url() {
-    // generate url
-    // format e.g. #entries?select=true&topic_id[]=3&tag_id[]=2&tag_id[]=3
-    // elements:
-    // #entries?select=true &topic_id[]=3 &tag_id[]=2 &tag_id[]=3
+  update_url() {
+    // reset when "topic" starts with ~ (edit view)
+    if (this.activeTopics[0]) if (this.activeTopics[0].startsWith('~'))
+      this.activeTopics.shift();
 
-    let hash_url = "#entries";
-    if (this.activeTopics.length > 0) {
-      hash_url += "?selected";
-      for (const t of this.activeTopics) {
-        hash_url += '&topics[]=' + encodeURIComponent(t);
-      }
-      for (const s of this.activeTags) {
-        hash_url += '&subtags[]=' + encodeURIComponent(s);
-      }
-    }
-    // update it
-    window.location.hash = hash_url;
+    myrouter.setUrl(myrouter.getRoute(), [ this.activeTopics, this.activeTags ]);
   }
   updateUrlTopics(activeTopics) {
     this.activeTopics = activeTopics;
@@ -87,4 +67,4 @@ class MainMenu extends HTMLElement {
   }
 }
 
-customElements.define('main-menu', MainMenu);
+customElements.define('editor-menu', EditorMenu);

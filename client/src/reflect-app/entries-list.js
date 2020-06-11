@@ -31,13 +31,24 @@ class EntriesList extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
-    myrouter.register(this);
     this.entries = api.observe('entries');
     this.defaultLimit = 3;
     this.limit = this.defaultLimit;
   }
   connectedCallback() {
-    //this.update();
+    myrouter.register(this);
+    this.update();
+    this._initObserver();
+  }
+  disconnectedCallback() {
+    myrouter.unregister(this);
+  }
+  routerUpdate() {
+    this.activeTopics = myrouter.getParts(0);
+    this.activeTags = myrouter.getParts(1);
+    this._updateQuery();
+  }
+  _initObserver() {
     this.bottomObserver = new IntersectionObserver((e)=>this._loadContent(e),
       { threshold: 0.1 }
     );
@@ -49,23 +60,13 @@ class EntriesList extends HTMLElement {
     const ul = this.shadowRoot.querySelector('ul');
     ulMutationObserver.observe(ul, { childList: true });
   }
-  routerUpdate(route, parts, parameters) {
-    this.activeTopics = parts[0];
-    this.activeTags = parts[1];
-    this._resetLimit([{intersectionRatio: 1}]);
-  }
-  /*triggerUpdate(urlStateObject) {
-    console.log('updating entries-list...');
-    const params = urlStateObject.params;
-    this.activeTopics = params.topics || [];
-    this.activeTags = params.subtags || [];
-    this._resetLimit([{intersectionRatio: 1}]);
-  }*/
   _updateObserver(mutationsList, observer) {
     const ul = this.shadowRoot.querySelector('ul');
     const newLastli = ul.lastElementChild;
-    newLastli.classList.add('lastelement')
-    this.bottomObserver.observe(newLastli);
+    if (newLastli) {
+      newLastli.classList.add('lastelement')
+      this.bottomObserver.observe(newLastli);
+    }
   }
   _resetLimit(entries) {
     if (entries[0].intersectionRatio <= 0) return;
@@ -111,7 +112,7 @@ class EntriesList extends HTMLElement {
       ${observableList(
           this.entries,
           (v, i) => html`
-            <li><a href="#entry?id=${v.id}"><entry-item .entry=${v}></entry-item></a></li>
+            <li><a href="#editor/~${v.id}"><entry-item .entry=${v}></entry-item></a></li>
           `, html`
             <pre>loading...</pre>
           `)}

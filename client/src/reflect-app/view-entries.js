@@ -15,11 +15,6 @@ const style = html`
     entry-create {
       margin: 15px 20px 0 20px;
     }
-    /*#entries-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }*/
   </style>
 `;
 
@@ -31,17 +26,11 @@ class ViewEntries extends HTMLElement {
   connectedCallback() {
     this.update();
   }
-  /*triggerUpdate(urlStateObject) {
-    this.update();
-    this.shadowRoot.querySelector('entries-list').triggerUpdate(urlStateObject);
-  }*/
   update() {
     render(html`${style}
-      ${ loggedIn() ?
-        html`<div id="entryCreateBox"><entry-create></entry-create></div>` :
-        html`` }
-      <entries-list></entries-list>
-      `,
+          <div id="entryCreateBox"><entry-create></entry-create></div>
+          <entries-list></entries-list>
+          `,
       this.shadowRoot);
   }
 }

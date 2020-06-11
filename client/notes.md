@@ -16,6 +16,7 @@
   - use a real database instead of a JSON file (mongoDB)
 * direct link doesn't work when not logged in -> hard to debug, projectData-client issue
 * "TypeError: newLastli is null" on login/logout -> reproduce
+* hidden browse button from image loader visible on menu sometimes
 
 ### Features
 
