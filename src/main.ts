@@ -3,6 +3,8 @@ import compression from 'compression';
 import expressJwt from 'express-jwt';
 import fileupload from 'express-fileupload';
 
+import cors from 'cors';
+
 // projectData
 import Endpoint from '@lsys/projectData/esm/Endpoint';
 
@@ -20,6 +22,11 @@ import * as config from '../config.js';
 // setup app
 
 const app = express();
+
+app.use(cors({
+  origin: function(origin, callback){callback(null, true)},
+  credentials: true
+}))
 app.use(express.json({limit: '10mb'}));
 app.use(compression());
 app.use(expressJwt({
