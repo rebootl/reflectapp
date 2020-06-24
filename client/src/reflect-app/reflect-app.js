@@ -174,7 +174,7 @@ class ReflectApp extends HTMLElement {
       const p0 = myrouter.getParts(0)[0];
       if (p0) if (p0.startsWith('~'))
         return html`<nav><editor-menu></editor-menu></nav>
-        <main><view-edit-entry .id=${p0.slice(1)}></view-edit-entry></main>`;
+                    <main><view-edit-entry .id=${p0.slice(1)}></view-edit-entry></main>`;
       return html`<nav><editor-menu></editor-menu></nav>
                   <main><view-entries></view-entries><main>`;
     }

@@ -30,8 +30,6 @@ class Router {
   register(comp) {
     console.log("router register");
     registeredComponents.add(comp);
-    // -> check if registered multiple times!!!
-    console.log(registeredComponents)
   }
   unregister(comp) {
     registeredComponents.delete(comp);

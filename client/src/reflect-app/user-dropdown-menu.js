@@ -9,10 +9,9 @@ import './gen-elements/close-button.js';
 const style = html`
   <style>
     :host {
-      display: block;
+      display: flex;
       box-sizing: border-box;
       background-color: var(--surface);
-      /*border: 1px solid var(--border-back);*/
       border-radius: 3px;
       position: relative;
       overflow: hidden;
@@ -21,13 +20,10 @@ const style = html`
     }
     .overlay {
       background-color: rgba(255, 255, 255, 0.16);
+    }
+    #loginbox {
       padding: 20px 25px 15px 25px;
     }
-    /*close-button {
-      position: absolute;
-      right: 20px;
-      top: 12px;
-    }*/
     .inputfield {
       margin-bottom: 15px;
     }
@@ -36,9 +32,9 @@ const style = html`
       display: flex;
       justify-content: center;
     }
-    /*#logout-button {
-      margin-top: 15px;
-    }*/
+    #logout-button {
+      margin: 20px;
+    }
     small {
       display: flex;
       justify-content: center;
@@ -46,6 +42,18 @@ const style = html`
     }
     a {
       color: var(--primary);
+    }
+    .menuitem {
+      background-color: rgba(0, 0, 0, 0.28);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    }
+    .menuitem a {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      color: var(--light-text-hig-emph);
+      text-decoration: none;
     }
   </style>
 `;
@@ -58,6 +66,8 @@ class UserDropdownMenu extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({mode: 'open'});
+  }
+  connectedCallback() {
     this.update();
   }
   async submit() {
@@ -75,7 +85,7 @@ class UserDropdownMenu extends HTMLElement {
       // -> update content
       //console.log('login successful');
       //window.location.reload();
-      this.update_after_success();
+      this.updateAfterSuccess();
     }
     //else {
       // login unsuccessful
@@ -90,42 +100,43 @@ class UserDropdownMenu extends HTMLElement {
     logout();
     //window.location.reload();
     // -> check return ?
-    this.update_after_success();
+    this.updateAfterSuccess();
   }
   close() {
     this.dispatchEvent(event_close);
   }
-  update_after_success() {
+  updateAfterSuccess() {
     this.close();
     this.update();
     myrouter.triggerUpdate();
   }
-  get_login_content() {
+  getLoginContent() {
     if (loggedIn()) {
-      return html`<labelled-button id="logout-button"
-                                   @click=${()=>this.logout()}
-                                   label="Logout"></labelled-button>`;
+      return html`
+        <div class="menuitem"><a @click=${()=>this.close()} href="#">Overview</a></div>
+        <div class="menuitem"><a @click=${()=>this.close()} href="#editor">My Entries</a></div>
+        <labelled-button id="logout-button"
+                         @click=${()=>this.logout()}
+                         label="Logout"></labelled-button>`;
     } else {
       return html`
-      <form>
-        <text-input id="username" class="inputfield"
-                    placeholder="Username"></text-input>
-        <password-input id="password" class="inputfield"
-                        placeholder="Password"></password-input>
-        <div id="buttonbox">
-          <labelled-button @click=${()=>this.submit()}
-                           label="Login"></labelled-button>
-        </div>
-        <small><a href="#signup">Sign up</a></small>
-      </form>`;
+        <div id="loginbox">
+          <text-input id="username" class="inputfield"
+                      placeholder="Username"></text-input>
+          <password-input id="password" class="inputfield"
+                          placeholder="Password"></password-input>
+          <div id="buttonbox">
+            <labelled-button @click=${()=>this.submit()}
+                             label="Login"></labelled-button>
+          </div>
+          <small><a href="#signup">Sign up</a></small>
+        </div>`;
     }
   }
-  /*<h3>Login:</h3>
-  <close-button @click=${()=>this.close()}></close-button>*/
   update() {
     render(html`${style}
       <div class="overlay">
-        ${this.get_login_content()}
+        ${this.getLoginContent()}
       </div>
       `, this.shadowRoot);
   }

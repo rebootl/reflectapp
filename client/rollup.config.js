@@ -2,6 +2,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import copy from 'rollup-plugin-copy';
 import { terser } from 'rollup-plugin-terser';
+import livereload from 'rollup-plugin-livereload';
 
 // `npm run build` -> `production` is true
 // `npm run dev` -> `production` is false
@@ -28,6 +29,7 @@ export default {
             },
           ]
         }),
+        !production && livereload({ watch: 'dist', delay: 3000 }),
         production && terser(), // minify, but only in production
     ]
 };

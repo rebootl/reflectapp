@@ -16,7 +16,7 @@
   - use a real database instead of a JSON file (mongoDB)
 * direct link doesn't work when not logged in -> hard to debug, projectData-client issue
 * "TypeError: newLastli is null" on login/logout -> reproduce
-* hidden browse button from image loader visible on menu sometimes
+* hidden browse button from image loader visible on menu sometimes -> urghhh... :D:D
 
 ### Features
 
@@ -39,6 +39,7 @@
 
 ### Bugs / code cleanup
 
+* reset link comment after create entry (images?)
 * setting inspector localapi doesn't work -> what was this?
 * checkbox click on label triggers event but not checkmark -> do on design rework
 * make input-detection it's own component
