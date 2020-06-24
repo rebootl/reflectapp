@@ -1,7 +1,7 @@
 import { MongoDBQuery } from '@lsys/projectData/esm/Misc/MongoDB';
 import { deleteImage, handleUpdateImages } from './imageStorage.js';
-export default async function getEntriesEndpointConfig(db, entriesCollection) {
-    //const entriesCollection = await db.collection('entries');
+export default async function getEntriesEndpointConfig(db) {
+    const entriesCollection = await db.collection('entries');
     return {
         query: new MongoDBQuery(db, { collection: 'entries', query: {} }),
         id: (e) => e.id,
