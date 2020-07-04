@@ -9,3 +9,9 @@ mongoimport --db reflectapp \
   --collection users \
   --jsonArray \
   --file /docker-entrypoint-initdb.d/users.json
+
+# import profiles
+#mongoimport --db reflectapp \
+#  --collection profiles \
+#  --jsonArray \
+#  --file /docker-entrypoint-initdb.d/profiles.json

@@ -16,3 +16,7 @@ incl. import, dump and export scripts/setup
 
  $ docker exec -it reflectapp-mongodb mongo -u $USER -p $PASSWORD
  > rs.initiate()
+
+e.g.:
+ $ docker exec -it reflectapp-mongodb mongo -u reflectapp-admin -p example123
+ > rs.initiate()

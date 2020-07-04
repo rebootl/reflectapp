@@ -1,26 +1,29 @@
 import fs from 'fs';
-//import path from 'path';
 
 // files/paths
-const dataFile = 'db.json';
+const dataFile = 'entries.json';
+
+// persistent storage
 
 // load data
 let data = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
 
 // write data
-const writeData = (f) => {
-  fs.writeFileSync(f, JSON.stringify(data));
+const writeData = () => {
+  const str = JSON.stringify(data);
+  fs.writeFileSync(dataFile, str);
 };
 
 // write backup
-writeData(dataFile + '.dbupdate-backup');
+fs.writeFileSync(dataFile + '.dbupdate-backup', JSON.stringify(data));
 
 for (const entry of data) {
-  entry.user = 'rebootl';
-/*  if (entry.type === 'link' && entry.hasOwnProperty('url')) {
+  /*if (entry.type === 'link' && entry.hasOwnProperty('url')) {
     entry.text = entry.url;
     delete entry.url;
   }*/
+  // add field user
+  entry.user = 'rebootl';
 }
 
-writeData(dataFile);
+writeData();
