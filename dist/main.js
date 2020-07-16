@@ -49,6 +49,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(compression());
 app.use(expressJwt({
     secret: config.secret,
+    algorithms: ['HS256'],
     credentialsRequired: false
 }));
 app.use(fileupload({

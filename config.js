@@ -17,7 +17,7 @@ const user = {
 // database setup
 const dbUser = 'reflectapp-admin';
 const dbPassword = 'example123';
-const dbUrl = 'mongodb://reflectapp-mongodb:27017';
+const dbUrl = 'mongodb://localhost:27017';
 const dbName = 'reflectapp';
 
 // files/paths
